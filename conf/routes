@@ -1,0 +1,23 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# https://www.playframework.com/documentation/latest/ScalaRouting
+# ~~~~
+
+# An example controller showing a sample home page
+GET     /                           controllers.HomeController.index()
+GET     /contact                    controllers.ContactController.contact()
+GET     /thanks                     controllers.BookingController.thanks()
+GET     /signed-out                 controllers.SignOutController.signedOut()
+GET     /book                       controllers.BookingController.book(date: String = "")
+GET     /book/:date                 controllers.BookingController.book(date: String)
+POST    /book-slot                  controllers.BookingController.bookSlot()
+POST    /availability               controllers.BookingController.availability()
+GET     /book-contact/:date/:hour   controllers.BookingController.bookContact(date: String, hour: String)
+POST    /book-contact/:date/:hour   controllers.BookingController.submitContactDetails(date: String, hour: String)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+GET         /callback                                                                       @org.pac4j.play.CallbackController.callback(request: play.mvc.Http.Request)
+POST        /callback                                                                       @org.pac4j.play.CallbackController.callback(request: play.mvc.Http.Request)
+GET         /sign-out                                                                       @org.pac4j.play.LogoutController.logout(request: play.mvc.Http.Request)

@@ -1,0 +1,37 @@
+@import views.html.partials.contactError
+@import controllers.BookingController.Contact
+@import views.html.helper.CSRF
+@(contactForm: Form[Contact], date: String, hour: String)(implicit requestHeader: RequestHeader, messagesProvider: MessagesProvider)
+@main("BookingDetails") {
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-md-3">
+        <form class="contact-form needs-validation" id="contact" method="POST" action="@routes.BookingController.bookContact(date, hour)">
+          @CSRF.formField
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+            @contactError(contactForm, "email")
+          </div>
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Name">
+            @contactError(contactForm, "name")
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Phone number">
+            @contactError(contactForm, "phone")
+          </div>
+          <div class="form-group">
+            <label for="notes">Your request</label>
+            <textarea class="form-control" form="contact" name="notes" id="notes" placeholder="Notes">
+            </textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+}

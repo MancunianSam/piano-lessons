@@ -1,0 +1,34 @@
+@import views.html.helper.CSRF
+@import controllers.BookingController.Booking
+@(bookingForm: Form[Booking], availableSlots: List[String])(implicit requestHeader: RequestHeader, messagesProvider: MessagesProvider)
+@main("Book a lesson") {
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-md-3">
+        <form class="contact-form needs-validation" id="contact" method="POST" action="@routes.BookingController.availability()">
+          @CSRF.formField
+          <label for="date-select">Choose a date</label>
+          <input type="date" id="date-select" name="date" class="form-control booking-date" value="@bookingForm.value.map(_.date).getOrElse("")">
+          <div class="text-danger">
+            @bookingForm("date").error.map(err => Messages(err.message)).getOrElse("")
+          </div>
+          <button type="submit" class="btn btn-danger">Check availability</button>
+        </form>
+        <form class="contact-form" id="book" method="POST" action="@routes.BookingController.bookSlot()">
+          @CSRF.formField
+          <input type="hidden" name="date" value="@bookingForm.value.map(_.date).getOrElse("")">
+          <ul class="list-group">
+          @for(slot <- availableSlots) {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-left">@slot</span>
+              <button type="submit" name="slot" class="btn btn-danger mb-2" value="@slot">Book</button>
+            </li>
+          }
+          </ul>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+}
