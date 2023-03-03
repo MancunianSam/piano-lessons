@@ -2,6 +2,7 @@
 
 [![codecov](https://codecov.io/gh/MancunianSam/piano-lessons/branch/main/graph/badge.svg?token=5B9IBI3HNA)](https://codecov.io/gh/MancunianSam/piano-lessons)
 [![Test](https://github.com/MancunianSam/piano-lessons/actions/workflows/test.yml/badge.svg)](https://github.com/MancunianSam/piano-lessons/actions/workflows/test.yml)
+![GitHub](https://img.shields.io/github/license/MancunianSam/piano-lessons)
 
 ## Run the app
 
