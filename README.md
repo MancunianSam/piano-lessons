@@ -1,5 +1,8 @@
 # Piano lessons site
 
+[![codecov](https://codecov.io/gh/MancunianSam/piano-lessons/branch/main/graph/badge.svg?token=5B9IBI3HNA)](https://codecov.io/gh/MancunianSam/piano-lessons)
+[![Test](https://github.com/MancunianSam/piano-lessons/actions/workflows/test.yml/badge.svg)](https://github.com/MancunianSam/piano-lessons/actions/workflows/test.yml)
+
 ## Run the app
 
 Set the following environment variables and run with sbt
