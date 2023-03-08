@@ -18,7 +18,7 @@ jobs:
           fail_ci_if_error: true
       - name: Build typescript
         run: |
-          npm ci
+          npm -- prefix ts ci
           npm --prefix ts run build
           cp ts/dist/payment.js public/javascripts/
           sbt dist

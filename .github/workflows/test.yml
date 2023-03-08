@@ -11,5 +11,6 @@ jobs:
         run: sbt test
       - name: Run Typescript tests
         run: |
+          cd ts
           npm ci
-          npm --prefix ts test
+          npm run checks
