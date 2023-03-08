@@ -10,4 +10,6 @@ jobs:
       - name: Run Scala tests
         run: sbt test
       - name: Run Typescript tests
-        run: npm --prefix ts test
+        run: |
+          npm ci
+          npm --prefix ts test
