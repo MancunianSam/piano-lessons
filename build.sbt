@@ -24,6 +24,7 @@ libraryDependencies ++= Seq(
   "org.pac4j" % "pac4j-http" % pac4jVersion exclude("com.fasterxml.jackson.core", "jackson-databind"),
   "org.pac4j" % "pac4j-oidc" % pac4jVersion exclude("commons-io", "commons-io") exclude("com.fasterxml.jackson.core", "jackson-databind"),
   "ch.qos.logback" % "logback-classic" % "1.4.5",
+  "com.stripe" % "stripe-java" % "22.11.0"
 ) ++ Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",

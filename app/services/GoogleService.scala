@@ -1,4 +1,4 @@
-package configuration
+package services
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -8,11 +8,12 @@ import com.google.api.services.calendar.model.{CalendarListEntry, Event}
 import com.google.api.services.calendar.{Calendar, CalendarScopes}
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
+import configuration.GoogleConfiguration
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 
-class LiveGoogleConfiguration extends GoogleConfiguration {
+class GoogleService extends GoogleConfiguration {
   private val transport: NetHttpTransport = GoogleNetHttpTransport.newTrustedTransport()
   private val jsonFactory = GsonFactory.getDefaultInstance
   val credentials: GoogleCredentials = GoogleCredentials.getApplicationDefault()

@@ -8,3 +8,5 @@ target
 /.settings
 /RUNNING_PID
 .g8
+node_modules
+/dist

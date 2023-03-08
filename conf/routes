@@ -14,6 +14,10 @@ POST    /book-slot                  controllers.BookingController.bookSlot()
 POST    /availability               controllers.BookingController.availability()
 GET     /book-contact/:date/:hour   controllers.BookingController.bookContact(date: String, hour: String)
 POST    /book-contact/:date/:hour   controllers.BookingController.submitContactDetails(date: String, hour: String)
+POST    /payment-intent             controllers.PaymentController.paymentIntent()
+GET     /pay                        controllers.PaymentController.pay()
+GET     /payment-confirmation       controllers.PaymentController.paymentConfirmation()
+POST    /webhook                    controllers.PaymentController.webhook()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
