@@ -25,4 +25,14 @@ class PaymentControllerSpec extends PianoLessonsUtils {
       (a \ "clientSecret").as[String] must be("test-secret")
     }
   }
+
+  "PaymentController pay" should {
+    "return the payment intent" in {
+      val configuration = Configuration.from(Map())
+      val controller = new PaymentController(authorisedSecurityComponents, stripeConfiguration, configuration)
+      val response = controller.paymentIntent().apply(FakeRequest(POST, "/payment-intent").withCSRFToken)
+      val a = contentAsJson(response)
+      (a \ "clientSecret").as[String] must be("test-secret")
+    }
+  }
 }

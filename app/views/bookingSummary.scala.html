@@ -1,0 +1,38 @@
+@import views.html.helper.CSRF
+@import views.html.partials.spinner
+@import controllers.BookingController.Booking
+@(booking: Booking, apiKey: String)(implicit requestHeader: RequestHeader)
+@main("Booking summary") {
+  <input id="api-key" type="hidden" value="@apiKey">
+  <ul class="page-template">
+    <li>
+      <ul class="booking-summary">
+      <li><h2>Your booking summary</h2></li>
+        <li><p class="bold">Number of lessons:</p> @booking.numberOfLessons</li>
+      @for((date, idx) <- booking.dates.zipWithIndex) {
+        <li><p class="bold">Lesson @{idx + 1}</p> @date</li>
+      }
+        <li><p class="bold">Total Cost: </p>£@{booking.totalCost / 100}</li>
+      </ul>
+    </li>
+    <li>
+
+    </li>
+    <li>
+      @spinner()
+      <form id="payment-form">
+        @CSRF.formField
+        <div id="link-authentication-element">
+            <!--Stripe.js injects the Link Authentication Element-->
+        </div>
+        <div id="payment-element">
+            <!--Stripe.js injects the Payment Element-->
+        </div>
+        <button class="pay-btn" id="submit">
+          Pay now
+        </button>
+        <div id="payment-message" class="hidden"></div>
+      </form>
+    </li>
+  </ul>
+}

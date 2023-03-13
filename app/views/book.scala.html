@@ -1,34 +1,27 @@
 @import views.html.helper.CSRF
 @import controllers.BookingController.Booking
-@(bookingForm: Form[Booking], availableSlots: List[String])(implicit requestHeader: RequestHeader, messagesProvider: MessagesProvider)
+@()(implicit requestHeader: RequestHeader, messagesProvider: MessagesProvider)
 @main("Book a lesson") {
-  <div class="container-fluid">
-    <div class="row justify-content-center">
-      <div class="col-md-3">
-        <form class="contact-form needs-validation" id="contact" method="POST" action="@routes.BookingController.availability()">
-          @CSRF.formField
-          <label for="date-select">Choose a date</label>
-          <input type="date" id="date-select" name="date" class="form-control booking-date" value="@bookingForm.value.map(_.date).getOrElse("")">
-          <div class="text-danger">
-            @bookingForm("date").error.map(err => Messages(err.message)).getOrElse("")
-          </div>
-          <button type="submit" class="btn btn-danger">Check availability</button>
-        </form>
-        <form class="contact-form" id="book" method="POST" action="@routes.BookingController.bookSlot()">
-          @CSRF.formField
-          <input type="hidden" name="date" value="@bookingForm.value.map(_.date).getOrElse("")">
-          <ul class="list-group">
-          @for(slot <- availableSlots) {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span class="text-left">@slot</span>
-              <button type="submit" name="slot" class="btn btn-danger mb-2" value="@slot">Book</button>
-            </li>
-          }
-          </ul>
-        </form>
+  <section class="cards">
+    <ul>
+      @priceCard(1, "£30", "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo")
+      @priceCard(3, "£85", "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident")
+      @priceCard(6, "£170", "Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus,")
+    </ul>
 
-      </div>
+  </section>
+}
+@priceCard(numLessons: Int, amount: String, description: String) = {
+  <li class="card card-list-item">
+    <div class="price-heading">
+      <p class="price-text">@numLessons LESSON@if(numLessons > 1){S}</p>
     </div>
-
-  </div>
+    <div class="price-amount">
+      <p class="amount-text">@amount</p>
+      <p class="amount-description">@description</p>
+    </div>
+    <div class="price-submit">
+      <a class="price-submit-link" href="@routes.BookingController.calendar(numLessons, None, None)">Book now</a>
+    </div>
+  </li>
 }

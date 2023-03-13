@@ -3,15 +3,18 @@ import {Appearance, Stripe, StripeElements, StripePaymentElementOptions} from '@
 const items = [{ id: "xl-tshirt" }];
 
 window.onload = async function() {
+
   const csrfInput: HTMLInputElement | null = document.querySelector("input[name='csrfToken']")
   const apiKeyEl: HTMLInputElement | null = document.querySelector("#api-key")
-
+  const payments = new Payments()
+  payments.setLoading(true)
   if(csrfInput && apiKeyEl) {
+
     const stripe = window.Stripe(apiKeyEl.value)
-    const payments = new Payments()
     const elements = await payments.initialise(stripe, csrfInput.value);
     await payments.checkStatus(stripe);
     await payments.setSubmitHandler(stripe, elements)
+    payments.setLoading(false)
   }
 }
 
@@ -129,18 +132,15 @@ export class Payments {
 // Show a spinner on payment submission
   setLoading(isLoading: boolean) {
     const submit: HTMLButtonElement | null = document.querySelector("#submit")
-    const spinner: HTMLDivElement | null = document.querySelector("#spinner")
-    const buttonText: HTMLParagraphElement | null = document.querySelector("#button-text")
-    if(submit && spinner && buttonText) {
+    const spinner: HTMLDivElement | null = document.querySelector(".lds-roller")
+    if(submit && spinner) {
       if (isLoading) {
         // Disable the button and show a spinner
         submit.disabled = true;
         spinner.classList.remove("hidden");
-        buttonText.classList.add("hidden");
       } else {
         submit.disabled = false;
         spinner.classList.add("hidden");
-        buttonText.classList.remove("hidden");
       }
     }
 

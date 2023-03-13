@@ -15,20 +15,24 @@ import scala.concurrent.Future
 
 class CalendarService @Inject()(googleConfiguration: GoogleConfiguration) {
 
-  def getAvailableSlots(date: String): List[String] = {
+  def getAvailableSlots(date: String, numberOfLessons: Int): List[String] = {
     val allHours = 9 to 17
     val calendarId = googleConfiguration.calendarListItems.head.getId
-    val now = LocalDate.parse(date)
 
-    val start = new DateTime(Date.from(now.atStartOfDay().toInstant(ZoneOffset.UTC)))
-    val end = new DateTime(Date.from(now.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)))
-    val hours = googleConfiguration.listEvents(calendarId, start, end)
-      .flatMap(ev => {
-        (for {
-          start <- ev.getStart.getHour(false)
-          end <- ev.getEnd.getHour(true)
-        } yield Set(start, end)).getOrElse(Nil)
-      }).toSet
+    val hours = (0 until numberOfLessons).toSet.flatMap((plusWeeks: Int) => {
+      val now = LocalDate.parse(date).plusWeeks(plusWeeks)
+
+
+      val start = new DateTime(Date.from(now.atStartOfDay().toInstant(ZoneOffset.UTC)))
+      val end = new DateTime(Date.from(now.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)))
+      googleConfiguration.listEvents(calendarId, start, end)
+        .flatMap(ev => {
+          (for {
+            start <- ev.getStart.getHour(false)
+            end <- ev.getEnd.getHour(true)
+          } yield Set(start, end)).getOrElse(Nil)
+        }).toSet
+    })
     allHours.toSet.diff(hours).toList.sorted.map(h => s"$h:00")
   }
 

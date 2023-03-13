@@ -1,6 +1,6 @@
 @import views.html.helper.CSRF
 @(apiKey: String)(implicit requestHeader: RequestHeader)
-@main("Payment", includeStripeJs = true) {
+@main("Payment") {
   <input id="api-key" type="hidden" value="@apiKey">
   <div class="container-fluid">
     <div class="row justify-content-center">
