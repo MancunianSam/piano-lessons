@@ -3,7 +3,7 @@ organization := "dev.sampalmer"
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file(".")).enablePlugins(PlayScala).enablePlugins(SbtWeb)
 
 scalaVersion := "2.13.10"
 val circeVersion = "0.14.1"
@@ -37,6 +37,9 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "2.7.22" % Test,
   "com.github.tomakehurst" % "wiremock-jre8" % "2.35.0" % Test
 )
+
+pipelineStages := Seq(digest, cssCompress)
+
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "dev.sampalmer.controllers._"
 

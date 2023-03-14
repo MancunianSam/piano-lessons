@@ -9,4 +9,4 @@ target
 /RUNNING_PID
 .g8
 node_modules
-/dist
+/ts/dist/
