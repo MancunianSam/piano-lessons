@@ -2,6 +2,10 @@ h1, h2, h4, h5, h6 {
     font-family: 'Baskervville', serif;
 }
 
+ul {
+    padding: 0;
+}
+
 .dark-heading {
     color: black;
 }
@@ -25,7 +29,7 @@ a:hover {
 .title {
     grid-column: 1/4;
     text-align: left;
-    font-size: xxx-large;
+    align-self: end;
     color: whitesmoke;
     padding-left: 0.5em;
     font-family: 'Satisfy', cursive;
@@ -51,6 +55,10 @@ body {
 
 .cards {
     padding: 2rem;
+}
+
+.time {
+    justify-self: start;
 }
 
 .cards > ul {
@@ -161,10 +169,8 @@ body {
 
 .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: 2fr 1fr repeat(5, 3fr);
-    max-height: 170px;
-    max-width: 500px;
+    grid-template-columns: repeat(7, 11%);
+    grid-template-rows: 30% 15% repeat(6, 30%);
 }
 
 .calendar-header {
@@ -185,7 +191,6 @@ body {
     font-family: Baskervville serif;
     background-color: aliceblue;
     color: black;
-    padding: 14px 25px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
@@ -324,7 +329,10 @@ nav ul a {
 
 .main-body {
     display: grid;
-    grid-template-rows: 1fr 4fr 1fr;
+    grid-template-rows: 1fr 20fr 1fr;
+    width: 100vw;
+    height: 100vh;
 }
 
-
+html { height: 100%; }
+body { min-height: 100%; }

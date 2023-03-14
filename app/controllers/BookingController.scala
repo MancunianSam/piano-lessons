@@ -58,7 +58,7 @@ class BookingController @Inject()(
     val cost = numOfLessons match {
       case 3 => 8500
       case 6 => 17000
-      case i: Int => i * 30
+      case i: Int => i * 3000
     }
     val dates = (0 until numOfLessons).toList.map(plusWeeks => {
       val localDateTime = LocalDateTime.parse(s"${date}T${time}:00").plusWeeks(plusWeeks)
