@@ -15,10 +15,7 @@
         <li><p class="bold">Total Cost: </p>£@{booking.totalCost / 100}</li>
       </ul>
     </li>
-    <li>
-
-    </li>
-    <li>
+    <li class="payment-form">
       @spinner()
       <form id="payment-form">
         @CSRF.formField

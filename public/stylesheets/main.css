@@ -334,5 +334,9 @@ nav ul a {
     height: 100vh;
 }
 
+.payment-form {
+    justify-self: start;
+}
+
 html { height: 100%; }
 body { min-height: 100%; }

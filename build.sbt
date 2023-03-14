@@ -38,7 +38,7 @@ libraryDependencies ++= Seq(
   "com.github.tomakehurst" % "wiremock-jre8" % "2.35.0" % Test
 )
 
-pipelineStages := Seq(digest, cssCompress)
+pipelineStages := Seq(cssCompress, digest)
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "dev.sampalmer.controllers._"
