@@ -10,3 +10,4 @@ target
 .g8
 node_modules
 /ts/dist/
+/public/javascripts
