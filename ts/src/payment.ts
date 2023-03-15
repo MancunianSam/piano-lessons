@@ -91,7 +91,11 @@ export class Payments {
 
     const paymentElementOptions: StripePaymentElementOptions = {
       layout: "tabs",
-      fields: { billingDetails : {email: "never"}}
+      defaultValues : {
+        billingDetails: {
+          email: this.emailAddress
+        }
+      }
     };
 
     const paymentElement = elements.create("payment", paymentElementOptions);
