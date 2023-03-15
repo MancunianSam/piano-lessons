@@ -9,7 +9,7 @@
       <section class="cards time">
         <ul class="time">
         @for(slot <- availableSlots) {
-          <li class="time-card"><a class="time-link" href="/booking-summary/@numberOfLessons/@date/@slot">@slot</a></li>
+          <li class="time-card"><a class="time-link" href="@routes.BookingController.bookingContactDetails(numberOfLessons: Int, date: String, slot)">@slot</a></li>
         }
         </ul>
       </section>

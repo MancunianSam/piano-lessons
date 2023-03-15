@@ -3,6 +3,9 @@
 @import controllers.BookingController.Booking
 @(booking: Booking, apiKey: String)(implicit requestHeader: RequestHeader)
 @main("Booking summary") {
+  <noscript>
+    Please enable javascript. The payment form needs it to function
+  </noscript>
   <input id="api-key" type="hidden" value="@apiKey">
   <ul class="page-template">
     <li>

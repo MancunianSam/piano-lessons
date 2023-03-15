@@ -22,6 +22,15 @@ class BookingController @Inject()(
                                    configuration: Configuration
                                  ) extends OidcSecurity {
 
+  def contactForm: Form[Contact] = Form[Contact](
+    mapping(
+      "email" -> email.verifying("Please enter an email address", a => a.nonEmpty),
+      "name" -> nonEmptyText,
+      "phone" -> nonEmptyText,
+      "notes" -> optional(text)
+    )
+    (Contact.apply)(Contact.unapply)
+  )
 
   def book(): Action[AnyContent] = Action { implicit request: Request[Any] =>
     Ok(views.html.book())
@@ -32,7 +41,7 @@ class BookingController @Inject()(
     val thisMonth = calendar.get(Calendar.MONTH)
     val month = monthOpt.getOrElse(thisMonth)
     val year = yearOpt.getOrElse(calendar.get(Calendar.YEAR))
-    if(month < thisMonth || month == 12) {
+    if (month < thisMonth || month == 12) {
       Redirect(routes.BookingController.calendar(numberOfLessons, Option(thisMonth), yearOpt))
     } else {
       calendar.set(Calendar.MONTH, month)
@@ -46,9 +55,22 @@ class BookingController @Inject()(
     }
   }
 
+  def bookingContactDetails(numOfLessons: Int, date: String, time: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
+    Ok(views.html.bookingContactDetails(contactForm, numOfLessons, date, time))
+  }
+
+  def saveBookingContactDetails(numOfLessons: Int, date: String, time: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
+    contactForm.bindFromRequest().fold(err => {
+      BadRequest(views.html.bookingContactDetails(err, numOfLessons, date, time))
+    }, contact => {
+      //Save
+      Redirect(routes.BookingController.bookingSummary(numOfLessons, date, time))
+    })
+  }
+
   def times(numOfLessons: Int, date: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
-//    val slots = calendarService.getAvailableSlots(date, numOfLessons)
-    val slots =  List("09:00", "10:00", "11:00")
+    //    val slots = calendarService.getAvailableSlots(date, numOfLessons)
+    val slots = List("09:00", "10:00", "11:00")
     Ok(views.html.times(numOfLessons, date, slots))
 
   }
@@ -75,6 +97,7 @@ class BookingController @Inject()(
 
 object BookingController {
   case class Booking(numberOfLessons: Int, dates: List[String], totalCost: Int)
+
   case class Times(slot: String)
 
   case class Contact(email: String, name: String, phone: String, notes: Option[String]) {

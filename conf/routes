@@ -11,9 +11,10 @@ GET         /signed-out                                       controllers.SignOu
 GET         /book                                             controllers.BookingController.book()
 GET         /calendar/:numOfLessons                           controllers.BookingController.calendar(numOfLessons: Int, monthOpt: Option[Int], yearOpt: Option[Int])
 GET         /times/:numOfLessons/:date                        controllers.BookingController.times(numOfLessons: Int, date: String)
+GET         /booking-contact/:numOfLessons/:date/:time        controllers.BookingController.bookingContactDetails(numOfLessons: Int, date: String, time: String)
+POST        /booking-contact/:numOfLessons/:date/:time        controllers.BookingController.saveBookingContactDetails(numOfLessons: Int, date: String, time: String)
 GET         /booking-summary/:numOfLessons/:date/:time        controllers.BookingController.bookingSummary(numOfLessons: Int, date: String, time: String)
 POST        /payment-intent                                   controllers.PaymentController.paymentIntent()
-GET         /pay                                              controllers.PaymentController.pay()
 GET         /payment-confirmation                             controllers.PaymentController.paymentConfirmation()
 POST        /webhook                                          controllers.PaymentController.webhook()
 

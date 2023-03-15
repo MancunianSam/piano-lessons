@@ -338,5 +338,64 @@ nav ul a {
     justify-self: start;
 }
 
+input {
+    padding: 10px;
+    box-shadow: 0 6px 8px 0 rgba(0,0,0,0.2);
+    font-size: 14px;
+    width: 300px;
+    border-radius: 5px;
+    font-family: Baskervville serif;
+}
+
+.submit-button {
+    background-color: #abcb42;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    width: 300px;
+    margin-top: 20px;
+}
+
+.err {
+    border-color: red;
+}
+
+.error-text {
+    color: red;
+}
+
+input[type="submit"] {
+    margin-top: 10px;
+}
+
+label {
+    color: black;
+    display: block;
+    font-family: Baskervville serif;
+    padding: 10px;
+}
+
+label:after { content: ": " }
+
+textarea {
+    padding: 10px;
+    box-shadow: 0 6px 8px 0 rgba(0,0,0,0.2);
+    font-size: 14px;
+    width: 300px;
+    border-radius: 5px;
+    font-family: Baskervville serif;
+}
+
+fieldset {
+    border: none;
+    display: flex;
+    flex-direction: column;
+
+}
+
 html { height: 100%; }
 body { min-height: 100%; }

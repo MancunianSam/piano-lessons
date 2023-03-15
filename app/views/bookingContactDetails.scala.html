@@ -1,0 +1,24 @@
+@import controllers.BookingController.Contact
+@import views.html.helper.CSRF
+@import views.html.partials.contactError
+@(form: Form[Contact], numOfLessons: Int, date: String, time: String)(implicit requestHeader: RequestHeader, messages: MessagesProvider)
+@main("Your contact details") {
+  <h2>Please enter your contact details</h2>
+  <form method="POST" action="@routes.BookingController.saveBookingContactDetails(numOfLessons, date, time)">
+    <fieldset>
+      @CSRF.formField
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" class="@if(form("email").error.isDefined) {err}">
+      @contactError(form, "email")
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" class="@if(form("email").error.isDefined) {err}">
+      @contactError(form, "name")
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" name="phone" class="@if(form("email").error.isDefined) {err}">
+      @contactError(form, "phone")
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes"></textarea>
+      <button class="submit-button" type="submit" value="Continue">Continue</button>
+    </fieldset>
+  </form>
+}

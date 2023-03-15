@@ -1,6 +1,6 @@
 @import controllers.BookingController.Contact
 @(contactForm: Form[Contact], name: String)(implicit messagesProvider: MessagesProvider)
-  <div class="text-danger">
+  <p class="error-text">
     @contactForm(name).error.map(err => Messages(err.message)).getOrElse("")
-  </div>
+  </p>
 

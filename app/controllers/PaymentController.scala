@@ -15,10 +15,6 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
                                   configuration: Configuration
                                  ) extends OidcSecurity {
 
-  def pay(): Action[AnyContent] = secureAction { implicit request: Request[Any] =>
-    Ok(views.html.pay(configuration.get[String]("stripe.public")))
-  }
-
   def paymentConfirmation(): Action[AnyContent] = secureAction { implicit request: Request[Any] =>
     Ok(views.html.paymentConfirmation())
   }
