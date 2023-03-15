@@ -5,5 +5,7 @@ CREATE TABLE student
     email             text not null,
     name              text not null,
     phone             text not null,
-    payment_intent_id text
+    payment_intent_id text,
+    total_cost        numeric,
+    payment_confirmed boolean
 );

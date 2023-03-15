@@ -1,17 +1,30 @@
 import {Appearance, Stripe, StripeElements, StripePaymentElementOptions} from '@stripe/stripe-js';
+import * as stream from "stream";
 
-const items = [{ id: "xl-tshirt" }];
+interface Input {
+  studentId: string
+  numberOfLessons: number
+  lengthOfLesson: number
+}
 
 window.onload = async function() {
 
+  const numberOfLessonsEl: HTMLInputElement | null = document.querySelector("#number-of-lessons")
+  const lengthOfLessonEl: HTMLInputElement | null = document.querySelector("#length-of-lesson")
+  const studentIdEl: HTMLInputElement | null = document.querySelector("#student-id")
+  const emailEl: HTMLInputElement | null = document.querySelector("#email")
   const csrfInput: HTMLInputElement | null = document.querySelector("input[name='csrfToken']")
   const apiKeyEl: HTMLInputElement | null = document.querySelector("#api-key")
-  const payments = new Payments()
-  payments.setLoading(true)
-  if(csrfInput && apiKeyEl) {
 
+
+  if(csrfInput && apiKeyEl && numberOfLessonsEl && lengthOfLessonEl && studentIdEl && emailEl) {
+    const payments = new Payments(emailEl.value)
+    payments.setLoading(true)
     const stripe = window.Stripe(apiKeyEl.value)
-    const elements = await payments.initialise(stripe, csrfInput.value);
+    const numberOfLessons = Number.parseInt(numberOfLessonsEl.value, 10)
+    const lengthOfLesson = Number.parseInt(lengthOfLessonEl.value, 10)
+    const studentId = studentIdEl.value
+    const elements = await payments.initialise(stripe, {studentId, numberOfLessons, lengthOfLesson}, csrfInput.value);
     await payments.checkStatus(stripe);
     await payments.setSubmitHandler(stripe, elements)
     payments.setLoading(false)
@@ -21,8 +34,8 @@ window.onload = async function() {
 export class Payments {
   emailAddress: string
 
-  constructor() {
-    this.emailAddress = ''
+  constructor(email: string) {
+    this.emailAddress = email
   }
   async setSubmitHandler(stripe: Pick<Stripe, "confirmPayment">, elements: StripeElements) {
     const form: HTMLFormElement | null = document.querySelector("#payment-form")
@@ -50,7 +63,7 @@ export class Payments {
     }
   }
 
-  async initialise(stripe: Pick<Stripe, "elements">, csrfValue: string): Promise<StripeElements> {
+  async initialise(stripe: Pick<Stripe, "elements">, input: Input, csrfValue: string): Promise<StripeElements> {
 
     const response = await fetch("/payment-intent", {
       method: "POST",
@@ -59,7 +72,7 @@ export class Payments {
         "Csrf-Token" : csrfValue
       },
       credentials: "include",
-      body: JSON.stringify({ items }),
+      body: JSON.stringify(input),
     });
     const { clientSecret } = await response.json();
 
@@ -78,6 +91,7 @@ export class Payments {
 
     const paymentElementOptions: StripePaymentElementOptions = {
       layout: "tabs",
+      fields: { billingDetails : {email: "never"}}
     };
 
     const paymentElement = elements.create("payment", paymentElementOptions);

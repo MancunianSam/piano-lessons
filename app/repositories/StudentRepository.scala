@@ -13,13 +13,21 @@ class StudentRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
   extends HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
 
-  def addStudent(contact: Contact, paymentIntendId: String): Future[Int] = {
-    val insert = Student += StudentRow(UUID.randomUUID(), contact.email, contact.name, contact.phone, Option(paymentIntendId))
+  private val insertQuery = Student returning Student.map(_.id) into
+    ((student, studentId) => student.copy(id = studentId))
+
+  def addStudent(contact: Contact, totalCost: Long, paymentIntendId: Option[String] = None): Future[StudentRow] = {
+    val insert = insertQuery += StudentRow(UUID.randomUUID(), contact.email, contact.name, contact.phone, paymentIntendId, Option(totalCost), Option(false))
     db.run(insert)
   }
 
-  def getStudent(email: String): Future[Seq[StudentRow]] = {
-    val query = Student.filter(_.email === email)
+  def updatePaymentIntentId(studentId: UUID, paymentIntentId: String) = {
+    val update = Student.filter(_.id === studentId).map(s => (s.paymentIntentId)).update(Option(paymentIntentId))
+    db.run(update)
+  }
+
+  def getStudent(id: UUID): Future[Seq[StudentRow]] = {
+    val query = Student.filter(_.id === id)
     db.run(query.result)
   }
 }

@@ -25,16 +25,22 @@ function __awaiter(thisArg, _arguments, P, generator) {
     });
 }
 
-const items = [{ id: "xl-tshirt" }];
 window.onload = function () {
     return __awaiter(this, void 0, void 0, function* () {
+        const numberOfLessonsEl = document.querySelector("#number-of-lessons");
+        const lengthOfLessonEl = document.querySelector("#length-of-lesson");
+        const studentIdEl = document.querySelector("#student-id");
+        const emailEl = document.querySelector("#email");
         const csrfInput = document.querySelector("input[name='csrfToken']");
         const apiKeyEl = document.querySelector("#api-key");
-        const payments = new Payments();
-        payments.setLoading(true);
-        if (csrfInput && apiKeyEl) {
+        if (csrfInput && apiKeyEl && numberOfLessonsEl && lengthOfLessonEl && studentIdEl && emailEl) {
+            const payments = new Payments(emailEl.value);
+            payments.setLoading(true);
             const stripe = window.Stripe(apiKeyEl.value);
-            const elements = yield payments.initialise(stripe, csrfInput.value);
+            const numberOfLessons = Number.parseInt(numberOfLessonsEl.value, 10);
+            const lengthOfLesson = Number.parseInt(lengthOfLessonEl.value, 10);
+            const studentId = studentIdEl.value;
+            const elements = yield payments.initialise(stripe, { studentId, numberOfLessons, lengthOfLesson }, csrfInput.value);
             yield payments.checkStatus(stripe);
             yield payments.setSubmitHandler(stripe, elements);
             payments.setLoading(false);
@@ -42,8 +48,8 @@ window.onload = function () {
     });
 };
 class Payments {
-    constructor() {
-        this.emailAddress = '';
+    constructor(email) {
+        this.emailAddress = email;
     }
     setSubmitHandler(stripe, elements) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -70,7 +76,7 @@ class Payments {
             }
         });
     }
-    initialise(stripe, csrfValue) {
+    initialise(stripe, input, csrfValue) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield fetch("/payment-intent", {
                 method: "POST",
@@ -79,7 +85,7 @@ class Payments {
                     "Csrf-Token": csrfValue
                 },
                 credentials: "include",
-                body: JSON.stringify({ items }),
+                body: JSON.stringify(input),
             });
             const { clientSecret } = yield response.json();
             const appearance = {

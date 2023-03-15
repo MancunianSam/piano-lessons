@@ -1,0 +1,38 @@
+@import views.html.helper.CSRF
+@import controllers.BookingController.Booking
+@()(implicit requestHeader: RequestHeader, messagesProvider: MessagesProvider)
+@main("Book a lesson") {
+  <section class="cards">
+    <ul>
+      @priceCard(30, "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo")
+      @priceCard(60, "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident")
+      @priceCard(0, "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident")
+
+
+    </ul>
+
+  </section>
+}
+@priceCard(lessonLength: Int, description: String) = {
+  <li class="card card-list-item">
+    <div class="price-heading">
+      @if(lessonLength == 0) {
+        <p class="price-text">FREE TRIAL LESSON</p>
+      } else {
+        <p class="price-text">@lessonLength MINUTE LESSON</p>
+      }
+
+    </div>
+    <div class="price-amount">
+      <p class="amount-description">@description</p>
+    </div>
+    <div class="price-submit">
+      @if(lessonLength == 0){
+        <a class="price-submit-link" href="@routes.BookingController.calendar(1, lessonLength, None, None)">Book now</a>
+      } else {
+        <a class="price-submit-link" href="@routes.BookingController.book(lessonLength)">Book now</a>
+      }
+
+    </div>
+  </li>
+}

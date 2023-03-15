@@ -1,10 +1,10 @@
 @import controllers.BookingController.Contact
 @import views.html.helper.CSRF
 @import views.html.partials.contactError
-@(form: Form[Contact], numOfLessons: Int, date: String, time: String)(implicit requestHeader: RequestHeader, messages: MessagesProvider)
+@(form: Form[Contact], numOfLessons: Int, lengthOfLesson: Int, date: String, time: String)(implicit requestHeader: RequestHeader, messages: MessagesProvider)
 @main("Your contact details") {
   <h2>Please enter your contact details</h2>
-  <form method="POST" action="@routes.BookingController.saveBookingContactDetails(numOfLessons, date, time)">
+  <form method="POST" action="@routes.BookingController.saveBookingContactDetails(numOfLessons, lengthOfLesson, date, time)">
     <fieldset>
       @CSRF.formField
       <label for="email">Email</label>

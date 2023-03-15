@@ -7,11 +7,16 @@
     Please enable javascript. The payment form needs it to function
   </noscript>
   <input id="api-key" type="hidden" value="@apiKey">
+  <input id="number-of-lessons" type="hidden" value="@booking.numberOfLessons">
+  <input id="length-of-lesson" type="hidden" value="@booking.lengthOfLesson">
+  <input id="email" type="hidden" value="@booking.email">
+  <input id="student-id" type="hidden" value="@booking.studentId">
   <ul class="page-template">
     <li>
       <ul class="booking-summary">
       <li><h2>Your booking summary</h2></li>
         <li><p class="bold">Number of lessons:</p> @booking.numberOfLessons</li>
+        <li><p class="bold">Length of lesson:</p> @booking.lengthOfLesson minutes</li>
       @for((date, idx) <- booking.dates.zipWithIndex) {
         <li><p class="bold">Lesson @{idx + 1}</p> @date</li>
       }

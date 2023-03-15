@@ -1,4 +1,4 @@
-@(numberOfLessons: Int, days: List[String], monthName: String, month: Int, showPrevious: Boolean, year: Int)
+@(numberOfLessons: Int, lessonLength: Int, days: List[String], monthName: String, month: Int, showPrevious: Boolean, year: Int)
 @main("Select a date") {
   <ul class="page-template">
     <li>
@@ -16,13 +16,13 @@
     <li class="calendar-grid">
       <div class="calendar-header">
         @if(showPrevious) {
-          <a class="left-arrow"  href="@routes.BookingController.calendar(numberOfLessons, Option(month - 1), Option(year))">
+          <a class="left-arrow"  href="@routes.BookingController.calendar(numberOfLessons, lessonLength, Option(month - 1), Option(year))">
             <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 1024 1024" class="icon"><path d="M768 903.232l-50.432 56.768L256 512l461.568-448 50.432 56.768L364.928 512z" fill="#000000"/></svg>
           </a>
         }
         <p class="calendar-month-label">@monthName</p>
         @if(month != 11) {
-          <a class="right-arrow" href="@routes.BookingController.calendar(numberOfLessons, Option(month + 1), Option(year))">
+          <a class="right-arrow" href="@routes.BookingController.calendar(numberOfLessons, lessonLength, Option(month + 1), Option(year))">
             <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 1024 1024" class="icon"><path d="M256 120.768L306.432 64 768 512l-461.568 448L256 903.232 659.072 512z" fill="#000000"/></svg>
           </a>
         }
@@ -34,7 +34,7 @@
         @if(day.isEmpty) {
           <span class="missing-day"></span>
         } else {
-          <a href="/times/@numberOfLessons/@{s"2023-${f"${month + 1}%02d"}-${f"${day.toInt}%02d"}"}" class="btn">@day</a>
+          <a href="@routes.BookingController.times(numberOfLessons, lessonLength, s"2023-${f"${month + 1}%02d"}-${f"${day.toInt}%02d"}")" class="btn">@day</a>
         }
 
       }
