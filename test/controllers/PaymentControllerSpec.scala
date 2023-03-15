@@ -10,7 +10,7 @@ import play.api.test.Helpers.{POST, contentAsJson, defaultAwaitTimeout}
 import utils.PianoLessonsUtils
 
 class PaymentControllerSpec extends PianoLessonsUtils {
-  val stripeConfiguration: StripeConfiguration = () => {
+  val stripeConfiguration: StripeConfiguration = (n, a) => {
     val paymentIntent = new PaymentIntent()
     paymentIntent.setClientSecret("test-secret")
     paymentIntent

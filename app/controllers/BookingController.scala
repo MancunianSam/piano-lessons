@@ -2,12 +2,14 @@ package controllers
 
 import auth.OidcSecurity
 import com.google.inject.Inject
+import configuration.StripeConfiguration
 import controllers.BookingController.{Booking, Contact, Times}
 import org.pac4j.play.scala.SecurityComponents
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc.{Action, AnyContent, Request}
+import repositories.StudentRepository
 import services.{CalendarService, EmailService}
 
 import java.time.{LocalDate, LocalDateTime}
@@ -19,8 +21,10 @@ class BookingController @Inject()(
                                    val controllerComponents: SecurityComponents,
                                    val calendarService: CalendarService,
                                    val emailService: EmailService,
+                                   val stripeConfiguration: StripeConfiguration,
+                                   val studentRepository: StudentRepository,
                                    configuration: Configuration
-                                 ) extends OidcSecurity {
+                                 )(implicit val executionContext: ExecutionContext) extends OidcSecurity {
 
   def contactForm: Form[Contact] = Form[Contact](
     mapping(
@@ -59,12 +63,15 @@ class BookingController @Inject()(
     Ok(views.html.bookingContactDetails(contactForm, numOfLessons, date, time))
   }
 
-  def saveBookingContactDetails(numOfLessons: Int, date: String, time: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
+  def saveBookingContactDetails(numOfLessons: Int, date: String, time: String): Action[AnyContent] = Action.async { implicit request: Request[Any] =>
     contactForm.bindFromRequest().fold(err => {
-      BadRequest(views.html.bookingContactDetails(err, numOfLessons, date, time))
+      Future.successful(BadRequest(views.html.bookingContactDetails(err, numOfLessons, date, time)))
     }, contact => {
-      //Save
-      Redirect(routes.BookingController.bookingSummary(numOfLessons, date, time))
+      val paymentIntent = stripeConfiguration.paymentIntent(numOfLessons, 60)
+      studentRepository.addStudent(contact, paymentIntent.getId).map(_ => {
+        Redirect(routes.BookingController.bookingSummary(numOfLessons, date, time))
+      })
+
     })
   }
 

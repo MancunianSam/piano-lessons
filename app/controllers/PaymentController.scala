@@ -29,7 +29,7 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
   }
 
   def paymentIntent(): Action[AnyContent] = Action { implicit request: Request[Any] =>
-    val paymentIntent = stripeConfiguration.paymentIntent()
+    val paymentIntent = stripeConfiguration.paymentIntent(1, 1)
     val response = Json.toJson(CreatePaymentResponse(paymentIntent.getClientSecret))
     Ok(Json.stringify(response))
   }

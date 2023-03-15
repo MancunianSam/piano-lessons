@@ -20,7 +20,10 @@ libraryDependencies ++= Seq(
   "com.google.api-client" % "google-api-client" % "1.32.1",
   "com.google.apis" % "google-api-services-calendar" % "v3-rev411-1.25.0",
   "com.google.auth" % "google-auth-library-oauth2-http" % "1.16.0",
+  "com.typesafe.play" %% "play-slick" % "5.1.0",
+  "org.postgresql" % "postgresql" % "42.5.4",
   "org.pac4j" %% "play-pac4j" % "11.1.0-PLAY2.8",
+  "com.typesafe.slick" %% "slick-codegen" % "3.4.1",
   "org.pac4j" % "pac4j-http" % pac4jVersion exclude("com.fasterxml.jackson.core", "jackson-databind"),
   "org.pac4j" % "pac4j-oidc" % pac4jVersion exclude("commons-io", "commons-io") exclude("com.fasterxml.jackson.core", "jackson-databind"),
   "ch.qos.logback" % "logback-classic" % "1.4.5",
@@ -40,8 +43,29 @@ libraryDependencies ++= Seq(
 
 pipelineStages := Seq(cssCompress, digest)
 
-// Adds additional packages into Twirl
-//TwirlKeys.templateImports += "dev.sampalmer.controllers._"
+lazy val databasePort = sys.env.getOrElse("DB_PORT", "5432")
+lazy val databaseUser = "piano"
+lazy val databasePassword = "password"
 
-// Adds additional packages into conf/routes
-// play.sbt.routes.RoutesKeys.routesImport += "dev.sampalmer.binders._"
+lazy val slick = taskKey[Seq[File]]("Generate Tables.scala")
+slick := {
+  val dir = (Compile / sourceManaged).value
+  val outputDir = dir / "slick"
+  val url = s"jdbc:postgresql://localhost:$databasePort/piano-lessons"
+  val jdbcDriver = "org.postgresql.Driver"
+  val slickDriver = "slick.jdbc.PostgresProfile"
+  val pkg = "dev.sampalmer"
+
+  val cp = (Compile / dependencyClasspath).value
+  val s = streams.value
+
+  runner.value.run("slick.codegen.SourceCodeGenerator",
+    cp.files,
+    Array(slickDriver, jdbcDriver, url, outputDir.getPath, pkg, databaseUser, databasePassword),
+    s.log).failed foreach (sys error _.getMessage)
+
+  val file = outputDir / pkg / "Tables.scala"
+
+  Seq(file)
+}
+
