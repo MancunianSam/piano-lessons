@@ -30,9 +30,19 @@ a:hover {
     grid-column: 1/4;
     text-align: left;
     align-self: end;
+}
+
+.title-text {
     color: whitesmoke;
     padding-left: 0.5em;
     font-family: 'Satisfy', cursive;
+    margin-bottom: 0;
+}
+
+.title-text-tagline {
+    font-size: .9em;
+    padding-left: 1em;
+    margin-top: 0;
 }
 
 .footer {
@@ -74,7 +84,7 @@ body {
 }
 
 .cards > ul > li > figure {
-    max-height: 220px;
+    max-height: 200px;
     overflow: hidden;
     border-top-left-radius: .5rem;
     border-top-right-radius: .5rem;
@@ -300,6 +310,23 @@ img {
     font-family: 'Satisfy', cursive;
 }
 
+.quote-text {
+    font-family: 'Satisfy', cursive;
+    padding-left: 1em;
+    font-size: x-large;
+    box-shadow: 0 6px 8px 0 rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+
+.sub-text {
+    font-size: medium;
+    font-family: Baskervville serif;
+}
+
+.why-page {
+    display: grid;
+    grid-template-columns: 5fr 1fr
+}
 .body-image {
     grid-column: 2;
     align-self: center;

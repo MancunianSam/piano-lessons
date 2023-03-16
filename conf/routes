@@ -5,6 +5,7 @@
 
 # An example controller showing a sample home page
 GET         /                                                                          controllers.HomeController.index()
+GET         /why-piano                                                                 controllers.HomeController.why()
 GET         /contact                                                                   controllers.ContactController.contact()
 GET         /thanks                                                                    controllers.BookingController.thanks()
 GET         /signed-out                                                                controllers.SignOutController.signedOut()

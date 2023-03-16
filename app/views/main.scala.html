@@ -20,20 +20,21 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script src="@routes.Assets.versioned("javascripts/payment.js")"></script>
   </head>
-  <body>
-    <div class="main-body">
-      <nav class="row-nav">
-        <ul class="nav-list">
-          <li class="nav-list-item"><a class="nav-link" href="@routes.HomeController.index()">Home</a></li>
-          <li class="nav-list-item"><a class="nav-link" href="@routes.BookingController.chooseLength()">Book Lesson</a></li>
-        </ul>
-        <h1 class="title">Claire Palmer Piano Lessons</h1>
-      </nav>
-      <main>
-        @content
-      </main>
-      <div class="footer"></div>
-    </div>
-
+  <body class="main-body">
+    <nav class="row-nav">
+      <ul class="nav-list">
+        <li class="nav-list-item"><a class="nav-link" href="@routes.HomeController.index()">Home</a></li>
+        <li class="nav-list-item"><a class="nav-link" href="@routes.BookingController.chooseLength()">Book Lesson</a></li>
+        <li class="nav-list-item"><a class="nav-link" href="@routes.HomeController.why()">Why Piano?</a></li>
+      </ul>
+      <div class="title">
+        <h1 class="title-text">Claire Palmer Piano Lessons</h1>
+        <h2 class="title-text title-text-tagline">Bespoke instrumental lessons for all</h2>
+      </div>
+    </nav>
+    <main>
+    @content
+    </main>
+    <div class="footer"></div>
   </body>
 </html>
