@@ -1,5 +1,4 @@
 import {Appearance, Stripe, StripeElements, StripePaymentElementOptions} from '@stripe/stripe-js';
-import * as stream from "stream";
 
 interface Input {
   studentId: string
@@ -44,11 +43,10 @@ export class Payments {
         ev.preventDefault();
         this.setLoading(true);
 
-
         const { error } = await stripe.confirmPayment({
           elements,
           confirmParams: {
-            return_url: "http://localhost:9000/payment-confirmation",
+            return_url: `${window.location.protocol}://${window.location.host}/payment-confirmation`,
             receipt_email: this.emailAddress,
           },
         });

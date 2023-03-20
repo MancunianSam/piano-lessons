@@ -26,6 +26,14 @@ a:hover {
     color: whitesmoke;
 }
 
+.body-link:visited {
+    color: #677036;
+}
+
+.body-link {
+    color: #677036;
+}
+
 .title {
     grid-column: 1/4;
     text-align: left;
@@ -43,6 +51,7 @@ a:hover {
     font-size: .9em;
     padding-left: 1em;
     margin-top: 0;
+    font-style: italic;
 }
 
 .footer {
@@ -151,6 +160,7 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     grid-gap: 1rem;
     list-style: none;
+    padding-left: 10px;
 }
 
 .left-arrow {
@@ -240,6 +250,7 @@ body {
     justify-items: start;
     margin: unset;
     border: grey 1px solid;
+    color: whitesmoke;
 }
 
 li.card:hover {
@@ -268,8 +279,8 @@ li.card:hover {
 }
 
 .price-submit-link  {
-    background-color: #feaf17;
-    color: white;
+    background-color: #f35001;
+    color: black;
     padding: 14px 25px;
     text-align: center;
     text-decoration: none;
@@ -356,9 +367,8 @@ nav ul a {
 
 .main-body {
     display: grid;
-    grid-template-rows: 1fr 20fr 1fr;
-    width: 100vw;
-    height: 100vh;
+    grid-template-rows: 1fr 8fr 1fr;
+    margin: 0;
 }
 
 .payment-form {
@@ -375,9 +385,9 @@ input {
 }
 
 .submit-button {
-    background-color: #abcb42;
+    background-color: #f35001;
     border: none;
-    color: white;
+    color: black;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
@@ -423,6 +433,3 @@ fieldset {
     flex-direction: column;
 
 }
-
-html { height: 100%; }
-body { min-height: 100%; }

@@ -23,7 +23,7 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
                                   amountService: AmountService
                                  )(implicit val executionContext: ExecutionContext) extends OidcSecurity {
 
-  def paymentConfirmation(): Action[AnyContent] = secureAction { implicit request: Request[Any] =>
+  def paymentConfirmation(): Action[AnyContent] = Action { implicit request: Request[Any] =>
     Ok(views.html.paymentConfirmation())
   }
 

@@ -16,10 +16,10 @@
 @priceCard(numLessons: Int, amount: String, description: String) = {
   <li class="card card-list-item">
     <div class="price-heading">
-      <p class="price-text">@numLessons LESSON@if(numLessons > 1){S}</p>
+      <h2 class="price-text">@numLessons LESSON@if(numLessons > 1){S}</h2>
     </div>
     <div class="price-amount">
-      <p class="amount-text">@amount</p>
+      <h3 class="amount-text">@amount</h3>
       <p class="amount-description">@description</p>
     </div>
     <div class="price-submit">

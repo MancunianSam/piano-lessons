@@ -15,12 +15,12 @@
     <li>
       <ul class="booking-summary">
       <li><h2>Your booking summary</h2></li>
-        <li><p class="bold">Number of lessons:</p> @booking.numberOfLessons</li>
-        <li><p class="bold">Length of lesson:</p> @booking.lengthOfLesson minutes</li>
+        <li><h3 class="bold">Number of lessons:</h3> @booking.numberOfLessons</li>
+        <li><h3 class="bold">Length of lesson:</h3> @booking.lengthOfLesson minutes</li>
       @for((date, idx) <- booking.dates.zipWithIndex) {
-        <li><p class="bold">Lesson @{idx + 1}</p> @date</li>
+        <li><h3 class="bold">Lesson @{idx + 1}</h3> @date</li>
       }
-        <li><p class="bold">Total Cost: </p>£@{booking.totalCost / 100}</li>
+        <li><h3 class="bold">Total Cost: </h3>£@{booking.totalCost / 100}</li>
       </ul>
     </li>
     <li class="payment-form">

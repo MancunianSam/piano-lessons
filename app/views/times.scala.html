@@ -6,13 +6,15 @@
       <h2>If you would like to rearrange any lessons, contact us.</h2>
     </li>
     @if(availableSlots.nonEmpty) {
-      <section class="cards time">
-        <ul class="time">
-        @for(slot <- availableSlots) {
-          <li class="time-card"><a class="time-link" href="@routes.BookingController.bookingContactDetails(numberOfLessons: Int, lessonLength, date: String, slot)">@slot</a></li>
-        }
-        </ul>
-      </section>
+      <li>
+        <section class="cards time">
+          <ul class="time">
+          @for(slot <- availableSlots) {
+            <li class="time-card"><a class="time-link" href="@routes.BookingController.bookingContactDetails(numberOfLessons: Int, lessonLength, date: String, slot)">@slot</a></li>
+          }
+          </ul>
+        </section>
+      </li>
     } else {
       <li>
         <h1>There are no times available for this date.</h1>
