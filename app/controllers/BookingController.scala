@@ -126,6 +126,8 @@ object BookingController {
       s"""
          |Email: $email
          |Name: $name
+         |Student Name: ${student.getOrElse("")}
+         |Level: ${level.getOrElse("")}
          |Phone: $phone
          |Notes: ${notes.getOrElse("")}
          |""".stripMargin

@@ -46,7 +46,7 @@ export class Payments {
         const { error } = await stripe.confirmPayment({
           elements,
           confirmParams: {
-            return_url: `${window.location.protocol}://${window.location.host}/payment-confirmation`,
+            return_url: `${window.location.protocol}//${window.location.host}/payment-confirmation`,
             receipt_email: this.emailAddress,
           },
         });
