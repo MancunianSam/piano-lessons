@@ -94,7 +94,8 @@ class BookingController @Inject()(
   }
 
   def times(numOfLessons: Int, lessonLength: Int, date: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
-    val slots = calendarService.getAvailableSlots(date, numOfLessons, lessonLength)
+    val updateLessonLength = if(lessonLength == 0) 30 else lessonLength
+    val slots = calendarService.getAvailableSlots(date, numOfLessons, updateLessonLength)
     Ok(views.html.times(numOfLessons, lessonLength, date, slots))
 
   }
