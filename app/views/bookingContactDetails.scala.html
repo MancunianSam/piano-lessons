@@ -3,10 +3,11 @@
 @import views.html.partials.contactError
 @(form: Form[Contact], numOfLessons: Int, lengthOfLesson: Int, date: String, time: String)(implicit requestHeader: RequestHeader, messages: MessagesProvider)
 @main("Your contact details") {
-  <h2>Please enter your contact details</h2>
   <form method="POST" action="@routes.BookingController.saveBookingContactDetails(numOfLessons, lengthOfLesson, date, time)">
     <fieldset>
-      <legend>Contact details for your booking</legend>
+      <legend>
+        <h2>Please enter your contact details</h2>
+      </legend>
       @CSRF.formField
       <label for="email">Email</label>
       <input type="email" id="email" name="email" class="@if(form("email").error.isDefined) {err}">
@@ -14,6 +15,12 @@
       <label for="name">Name</label>
       <input type="text" id="name" name="name" class="@if(form("email").error.isDefined) {err}">
       @contactError(form, "name")
+      <label for="student">Student name if different</label>
+      <input type="text" id="student" name="student" class="@if(form("student").error.isDefined) {err}">
+      @contactError(form, "student")
+      <label for="name">Level</label>
+      <input type="text" placeholder="Beginner or Grade 1" id="level" name="level" class="@if(form("level").error.isDefined) {err}">
+      @contactError(form, "level")
       <label for="phone">Phone</label>
       <input type="tel" id="phone" name="phone" class="@if(form("email").error.isDefined) {err}">
       @contactError(form, "phone")

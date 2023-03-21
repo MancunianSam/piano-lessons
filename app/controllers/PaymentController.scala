@@ -10,8 +10,9 @@ import play.api.Configuration
 import play.api.libs.json.Writes._
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, Request}
-import repositories.StudentRepository
+import repositories.{StudentRepository, TimesRepository}
 import services.{AmountService, CalendarService}
+import controllers.BookingController.Contact
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,6 +21,7 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
                                   stripeConfiguration: StripeConfiguration,
                                   calendarService: CalendarService,
                                   studentRepository: StudentRepository,
+                                  timesRepository: TimesRepository,
                                   amountService: AmountService
                                  )(implicit val executionContext: ExecutionContext) extends OidcSecurity {
 
@@ -27,12 +29,25 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
     Ok(views.html.paymentConfirmation())
   }
 
-  def webhook(): Action[JsValue] = Action(parse.json) { implicit request: Request[JsValue] =>
+  def webhook(): Action[JsValue] = Action.async(parse.json) { implicit request: Request[JsValue] =>
     request.body.validate[ChargeEvent].fold(
-      errors => BadRequest(Json.obj("message" -> JsError.toJson(errors))),
+      errors => Future(BadRequest(Json.obj("message" -> JsError.toJson(errors)))),
       chargeEvent => {
-
-        Ok(Json.obj("" -> chargeEvent.id))
+        if(chargeEvent.`type` == "charge.succeeded") {
+          val paymentIntentId = chargeEvent.data.`object`.payment_intent
+          (for {
+            _ <- studentRepository.updateChargeCompleted(paymentIntentId)
+            rows <- timesRepository.getTimes(paymentIntentId)
+          } yield {
+            rows.map(row => {
+              val (times, student) = row
+              val contact = Contact(student.email, student.name, student.student, student.level, student.phone, student.notes)
+              calendarService.putEvent(times.startDate, times.endDate, contact)
+            })
+          }).map(_ => Ok(Json.obj("" -> chargeEvent.id)))
+        } else {
+          Future.successful(Ok(Json.obj("" -> chargeEvent.id)))
+        }
       }
     )
   }
@@ -64,10 +79,14 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
 object PaymentController {
   case class CreatePaymentResponse(clientSecret: String)
 
-  case class ChargeEvent(id: String)
+  case class ChargeEventObject(payment_intent: String)
+  case class ChargeEventData(`object`: ChargeEventObject)
+  case class ChargeEvent(id: String, data: ChargeEventData, `type`: String)
 
   case class IntentInput(studentId: UUID, numberOfLessons: Int, lengthOfLesson: Int)
 
+  implicit val chargeObjectReads: Reads[ChargeEventObject] = Json.reads[ChargeEventObject]
+  implicit val chargeDataReads: Reads[ChargeEventData] = Json.reads[ChargeEventData]
   implicit val chargeReads: Reads[ChargeEvent] = Json.reads[ChargeEvent]
   implicit val studentIdInputReads: Reads[IntentInput] = Json.reads[IntentInput]
   implicit val paymentResponseWrites: OWrites[CreatePaymentResponse] = Json.writes[CreatePaymentResponse]

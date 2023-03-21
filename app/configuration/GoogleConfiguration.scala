@@ -10,5 +10,5 @@ trait GoogleConfiguration {
 
   def listEvents(calendarId: String, startTime: DateTime, endTime: DateTime): List[Event]
 
-  def addEvent(calendarId: String, event: Event): Future[Event]
+  def addEvent(calendarId: String, event: Event): Event
 }

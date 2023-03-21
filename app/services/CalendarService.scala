@@ -5,43 +5,61 @@ import com.google.api.services.calendar.model.{Event, EventDateTime}
 import com.google.inject.Inject
 import configuration.GoogleConfiguration
 import controllers.BookingController.Contact
-import services.CalendarService.EventUtils
+import services.CalendarService.{EventRange, EventUtils}
 
+import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, LocalTime, ZoneOffset}
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneOffset}
 import java.util.Date
+import scala.annotation.tailrec
 import scala.concurrent.Future
 
 class CalendarService @Inject()(googleConfiguration: GoogleConfiguration) {
 
-  def getAvailableSlots(date: String, numberOfLessons: Int): List[String] = {
-    val allHours = 9 to 17
-    val calendarId = googleConfiguration.calendarListItems.head.getId
+  private val startOfDay = 9
+  private val endOfDay = 18
 
-    val hours = (0 until numberOfLessons).toSet.flatMap((plusWeeks: Int) => {
-      val now = LocalDate.parse(date).plusWeeks(plusWeeks)
-
-
-      val start = new DateTime(Date.from(now.atStartOfDay().toInstant(ZoneOffset.UTC)))
-      val end = new DateTime(Date.from(now.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)))
-      googleConfiguration.listEvents(calendarId, start, end)
-        .flatMap(ev => {
-          (for {
-            start <- ev.getStart.getHour(false)
-            end <- ev.getEnd.getHour(true)
-          } yield Set(start, end)).getOrElse(Nil)
-        }).toSet
-    })
-    allHours.toSet.diff(hours).toList.sorted.map(h => s"$h:00")
+  @tailrec
+  private def getAllTimesForDay(increment: Int, allTimes: List[EventRange]): List[EventRange] = {
+    val currentTime = allTimes.head.end
+    if (currentTime.getHour == endOfDay) {
+      allTimes
+    } else {
+      getAllTimesForDay(increment, EventRange(currentTime, currentTime.plusMinutes(increment)) :: allTimes)
+    }
   }
 
-  def putEvent(date: String, slot: String, contactForm: Contact): Future[Event] = {
-    val hour = slot.split(":").head.toInt
+  def getAvailableSlots(date: String, numberOfLessons: Int, lengthOfLesson: Int): List[String] = {
+    val calendarId = googleConfiguration.calendarListItems.head.getId
+    val startTime = LocalTime.of(startOfDay, 0)
+    val firstRange = EventRange(startTime, startTime.plusMinutes(lengthOfLesson))
+    val allTimes = getAllTimesForDay(lengthOfLesson, firstRange :: Nil)
+    val allLessonTimes = (0 until numberOfLessons).toList.map((plusWeeks: Int) => {
+      val now = LocalDate.parse(date).plusWeeks(plusWeeks)
+      now -> allTimes
+    }).toMap
+    val timesWithNoEvent = allLessonTimes.map { case (date, times) =>
+      val start = new DateTime(Date.from(date.atStartOfDay().toInstant(ZoneOffset.UTC)))
+      val end = new DateTime(Date.from(date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)))
+      val allEvents = googleConfiguration.listEvents(calendarId, start, end)
+        .flatMap(ev => {
+          for {
+            start <- ev.getStart.getTime()
+            end <- ev.getEnd.getTime()
+          } yield EventRange(start, end)
+        })
+      date -> times.filter(time => !allEvents.exists(ev => ev.overlaps(time)))
+    }
+    val filtered = allTimes.filter(eachTime => timesWithNoEvent.count(_._2.contains(eachTime)) == numberOfLessons).sortBy(_.start)
+    filtered.map(_.start.format(DateTimeFormatter.ofPattern("HH:mm")))
+  }
+
+  def putEvent(startTime: Timestamp, endTime: Timestamp, contactForm: Contact): Event = {
     val calendarId = googleConfiguration.calendarListItems.head.getId
     val event = new Event()
-    event.setStart(new EventDateTime().setTime(date, hour))
-    event.setEnd(new EventDateTime().setTime(date, hour + 1))
+    event.setStart(new EventDateTime().setTime(startTime))
+    event.setEnd(new EventDateTime().setTime(endTime))
     event.setSummary(s"Booking for ${contactForm.email}")
     event.setDescription(contactForm.toString)
     googleConfiguration.addEvent(calendarId, event)
@@ -49,22 +67,21 @@ class CalendarService @Inject()(googleConfiguration: GoogleConfiguration) {
 }
 
 object CalendarService {
+  case class EventRange(start: LocalTime, end: LocalTime) {
+    def overlaps(range: EventRange): Boolean = {
+      range.start.isBefore(end) && start.isBefore(range.end)
+    }
+  }
 
   implicit class EventUtils(eventDateTime: EventDateTime) {
-    def getHour(minusOneSecond: Boolean): Option[Int] = {
+    def getTime(): Option[LocalTime] = {
       Option(eventDateTime.getDateTime).map(dateTime => {
-        val localTime = LocalTime.parse(dateTime.toStringRfc3339, DateTimeFormatter.ISO_DATE_TIME)
-        val adjustedTime = if (minusOneSecond) {
-          localTime.minusSeconds(1)
-        } else localTime
-        adjustedTime.getHour
-      }
-      )
+        LocalDateTime.parse(dateTime.toStringRfc3339, DateTimeFormatter.ISO_DATE_TIME).toLocalTime
+      })
     }
 
-    def setTime(date: String, hour: Int): EventDateTime = {
-      val eventDate = new SimpleDateFormat("yyyy-MM-dd HH").parse(s"$date $hour")
-      val dateTime = new DateTime(eventDate)
+    def setTime(date: Timestamp): EventDateTime = {
+      val dateTime = new DateTime(date.getTime)
       eventDateTime.setDateTime(dateTime)
       eventDateTime
     }

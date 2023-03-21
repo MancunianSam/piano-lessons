@@ -31,8 +31,8 @@ class GoogleService extends GoogleConfiguration {
       .getItems.asScala.toList
   }
 
-  def addEvent(calendarId: String, event: Event): Future[Event] =
-    Future.successful(calendarApi.events().insert(calendarId, event).execute())
+  def addEvent(calendarId: String, event: Event): Event =
+    calendarApi.events().insert(calendarId, event).execute()
 
   private def calendarApi: Calendar = {
     credentials.refresh()

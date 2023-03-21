@@ -54,8 +54,7 @@ slick := {
   val url = s"jdbc:postgresql://localhost:$databasePort/piano-lessons"
   val jdbcDriver = "org.postgresql.Driver"
   val slickDriver = "slick.jdbc.PostgresProfile"
-  val pkg = "dev.sampalmer" +
-    ""
+  val pkg = "repositories"
 
   val cp = (Compile / dependencyClasspath).value
   val s = streams.value

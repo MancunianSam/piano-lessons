@@ -3,17 +3,18 @@ package controllers
 import auth.OidcSecurity
 import com.google.inject.Inject
 import configuration.StripeConfiguration
-import controllers.BookingController.{Booking, Contact, Times}
+import controllers.BookingController.{Booking, Contact}
 import org.pac4j.play.scala.SecurityComponents
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc.{Action, AnyContent, Request}
-import repositories.StudentRepository
+import repositories.{StudentRepository, TimesRepository}
+import repositories.TimesRepository.formattedPattern
 import services.{AmountService, CalendarService, EmailService}
 
-import java.time.{LocalDate, LocalDateTime}
-import java.time.format.{DateTimeFormatter, FormatStyle}
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.{Calendar, Locale, UUID}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -24,6 +25,7 @@ class BookingController @Inject()(
                                    val emailService: EmailService,
                                    val stripeConfiguration: StripeConfiguration,
                                    val studentRepository: StudentRepository,
+                                   val timesRepository: TimesRepository,
                                    configuration: Configuration
                                  )(implicit val executionContext: ExecutionContext) extends OidcSecurity {
 
@@ -31,6 +33,8 @@ class BookingController @Inject()(
     mapping(
       "email" -> email.verifying("Please enter an email address", a => a.nonEmpty),
       "name" -> nonEmptyText,
+      "student" -> optional(text),
+      "level" -> optional(text),
       "phone" -> nonEmptyText,
       "notes" -> optional(text)
     )
@@ -72,7 +76,7 @@ class BookingController @Inject()(
     contactForm.bindFromRequest().fold(err => {
       Future.successful(BadRequest(views.html.bookingContactDetails(err, numOfLessons, lessonLength, date, time)))
     }, contact => {
-      if(lessonLength > 0) {
+      if (lessonLength > 0) {
         val amount = amountService.calculateAmount(numOfLessons, lessonLength)
         for {
           student <- studentRepository.addStudent(contact, amount, None)
@@ -90,8 +94,7 @@ class BookingController @Inject()(
   }
 
   def times(numOfLessons: Int, lessonLength: Int, date: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
-    //    val slots = calendarService.getAvailableSlots(date, numOfLessons)
-    val slots = List("09:00", "10:00", "11:00")
+    val slots = calendarService.getAvailableSlots(date, numOfLessons, lessonLength)
     Ok(views.html.times(numOfLessons, lessonLength, date, slots))
 
   }
@@ -100,15 +103,14 @@ class BookingController @Inject()(
     val apiKey = configuration.get[String]("stripe.public")
     val cost = amountService.calculateAmount(numOfLessons, lengthOfLesson)
     val dates = (0 until numOfLessons).toList.map(plusWeeks => {
-      val localDateTime = LocalDateTime.parse(s"${date}T${time}:00").plusWeeks(plusWeeks)
-      localDateTime.format(DateTimeFormatter.ofPattern(s"EEEE d LLLL yyyy HH mm"))
+      val localDateTime = LocalDateTime.parse(s"${date}T$time:00").plusWeeks(plusWeeks)
+      localDateTime.format(formattedPattern)
     })
-    studentRepository.getStudent(studentId).map(student => {
+    studentRepository.getStudent(studentId).flatMap(student => {
       val email = student.head.email
       val booking = Booking(studentId, email, numOfLessons, lengthOfLesson, dates, cost)
-      Ok(views.html.bookingSummary(booking, apiKey))
+      timesRepository.addTimes(booking).map(_ => Ok(views.html.bookingSummary(booking, apiKey)))
     })
-
   }
 
   def thanks(): Action[AnyContent] = Action { _ =>
@@ -119,9 +121,7 @@ class BookingController @Inject()(
 object BookingController {
   case class Booking(studentId: UUID, email: String, numberOfLessons: Int, lengthOfLesson: Int, dates: List[String], totalCost: Int)
 
-  case class Times(slot: String)
-
-  case class Contact(email: String, name: String, phone: String, notes: Option[String]) {
+  case class Contact(email: String, name: String, student: Option[String], level: Option[String], phone: String, notes: Option[String]) {
     override def toString: String = {
       s"""
          |Email: $email
