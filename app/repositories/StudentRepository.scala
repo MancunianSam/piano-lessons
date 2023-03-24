@@ -17,8 +17,8 @@ class StudentRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
   private val insertQuery = Student returning Student.map(_.id) into
     ((student, studentId) => student.copy(id = studentId))
 
-  def addStudent(contact: Contact, totalCost: Long, paymentIntendId: Option[String] = None): Future[StudentRow] = {
-    val insert = insertQuery += StudentRow(UUID.randomUUID(), contact.email, contact.name, contact.student, contact.level, contact.phone, contact.notes, paymentIntendId, Option(totalCost), Option(false))
+  def addStudent(contact: Contact, totalCost: Long, paymentIntendId: Option[String] = None, chargeCompleted: Boolean = false): Future[StudentRow] = {
+    val insert = insertQuery += StudentRow(UUID.randomUUID(), contact.email, contact.name, contact.student, contact.level, contact.phone, contact.notes, paymentIntendId, Option(totalCost), Option(chargeCompleted))
     db.run(insert)
   }
 

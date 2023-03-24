@@ -9,12 +9,11 @@ import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc.{Action, AnyContent, Request}
-import repositories.{StudentRepository, TimesRepository}
 import repositories.TimesRepository.formattedPattern
+import repositories.{StudentRepository, TimesRepository}
 import services.{AmountService, CalendarService, EmailService}
 
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.{Calendar, Locale, UUID}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -82,19 +81,29 @@ class BookingController @Inject()(
           student <- studentRepository.addStudent(contact, amount, None)
           paymentIntent = stripeConfiguration.paymentIntent(amount, student.id)
           _ <- studentRepository.updatePaymentIntentId(student.id, paymentIntent.getId)
+          booking <- createBooking(numOfLessons, lessonLength, date, time, student.id)
+          _ <- timesRepository.addTimes(booking)
         } yield {
           Redirect(routes.BookingController.bookingSummary(numOfLessons, lessonLength, date, time, student.id))
         }
       } else {
-        studentRepository.addStudent(contact, 0).map(_ => {
-          Redirect(routes.BookingController.thanks())
-        })
+        for {
+          student <- studentRepository.addStudent(contact, 0, chargeCompleted = true)
+          booking <- createBooking(numOfLessons, 30, date, time, student.id)
+          times <- timesRepository.addTimes(booking)
+        } yield {
+          times.map(time => {
+            val contact = Contact(student.email, student.name, student.student, student.level, student.phone, student.notes)
+            calendarService.putEvent(time.startDate, time.endDate, contact)
+          })
+          Ok(views.html.paymentConfirmation(booking))
+        }
       }
     })
   }
 
   def times(numOfLessons: Int, lessonLength: Int, date: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
-    val updateLessonLength = if(lessonLength == 0) 30 else lessonLength
+    val updateLessonLength = if (lessonLength == 0) 30 else lessonLength
     val slots = calendarService.getAvailableSlots(date, numOfLessons, updateLessonLength)
     Ok(views.html.times(numOfLessons, lessonLength, date, slots))
 
@@ -102,20 +111,19 @@ class BookingController @Inject()(
 
   def bookingSummary(numOfLessons: Int, lengthOfLesson: Int, date: String, time: String, studentId: UUID): Action[AnyContent] = Action.async { implicit request: Request[Any] =>
     val apiKey = configuration.get[String]("stripe.public")
+    createBooking(numOfLessons, lengthOfLesson, date, time, studentId).map(booking => Ok(views.html.bookingSummary(booking, apiKey)))
+  }
+
+  private def createBooking(numOfLessons: Int, lengthOfLesson: Int, date: String, time: String, studentId: UUID) = {
     val cost = amountService.calculateAmount(numOfLessons, lengthOfLesson)
     val dates = (0 until numOfLessons).toList.map(plusWeeks => {
       val localDateTime = LocalDateTime.parse(s"${date}T$time:00").plusWeeks(plusWeeks)
       localDateTime.format(formattedPattern)
     })
-    studentRepository.getStudent(studentId).flatMap(student => {
+    studentRepository.getStudent(studentId).map(student => {
       val email = student.head.email
-      val booking = Booking(studentId, email, numOfLessons, lengthOfLesson, dates, cost)
-      timesRepository.addTimes(booking).map(_ => Ok(views.html.bookingSummary(booking, apiKey)))
+      Booking(studentId, email, numOfLessons, lengthOfLesson, dates, cost)
     })
-  }
-
-  def thanks(): Action[AnyContent] = Action { _ =>
-    Ok(views.html.thanks())
   }
 }
 

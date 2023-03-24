@@ -37,7 +37,7 @@ class GoogleService extends GoogleConfiguration {
   private def calendarApi: Calendar = {
     credentials.refresh()
     val adapter = new HttpCredentialsAdapter(credentials)
-    new Calendar.Builder(transport, jsonFactory, adapter).build()
+    new Calendar.Builder(transport, jsonFactory, adapter).setApplicationName("Piano Lessons").build()
   }
 
 }

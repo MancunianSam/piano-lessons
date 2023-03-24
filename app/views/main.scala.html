@@ -13,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
     <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/spinner.css")">
-    <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.ico")">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baskervville&family=Satisfy&display=swap" rel="stylesheet">
@@ -27,14 +27,20 @@
         <li class="nav-list-item"><a class="nav-link" href="@routes.BookingController.chooseLength()">Book Lesson</a></li>
         <li class="nav-list-item"><a class="nav-link" href="@routes.HomeController.why()">Why Piano?</a></li>
       </ul>
+
       <div class="title">
-        <h1 class="title-text">Claire Palmer Piano Lessons</h1>
-        <h2 class="title-text title-text-tagline">Bespoke instrumental lessons for all</h2>
+        <div>
+          <h1 class="title-text">Claire Palmer Piano Lessons</h1>
+          <h2 class="title-text title-text-tagline">Bespoke instrumental lessons for all</h2>
+        </div>
+        <img class="logo-image" src="@routes.Assets.versioned("images/logo.png")">
       </div>
     </nav>
     <main>
     @content
     </main>
-    <div class="footer"></div>
+    <div class="footer">
+     <img class="ism-logo" src="@routes.Assets.versioned("images/ism_logo.svg")"  alt="ISM Logo"/>
+    </div>
   </body>
 </html>

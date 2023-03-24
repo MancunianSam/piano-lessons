@@ -1,0 +1,13 @@
+@import controllers.BookingController.Booking
+@(booking: Booking)
+<li>
+  <ul class="booking-summary">
+    <li><h2>Your booking summary</h2></li>
+    <li><h3 class="bold">Number of lessons:</h3> @booking.numberOfLessons</li>
+    <li><h3 class="bold">Length of lesson:</h3> @booking.lengthOfLesson minutes</li>
+    @for((date, idx) <- booking.dates.zipWithIndex) {
+      <li><h3 class="bold">Lesson @{idx + 1}</h3> @date</li>
+    }
+    <li><h3 class="bold">Total Cost: </h3>£@{booking.totalCost / 100}</li>
+  </ul>
+</li>

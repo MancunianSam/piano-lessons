@@ -1,4 +1,10 @@
-@()
+@import controllers.BookingController.Booking
+@import views.html.partials.summary
+@(booking: Booking)
 @main("Payment confirmed") {
-  <h1>Thanks for your money</h1>
+  <h1>Thanks for your booking</h1>
+  <h2>You will receive a confirmation email shortly</h2>
+  <ul>
+    @summary(booking)
+  </ul>
 }

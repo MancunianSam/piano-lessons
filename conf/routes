@@ -7,7 +7,6 @@
 GET         /                                                                          controllers.HomeController.index()
 GET         /why-piano                                                                 controllers.HomeController.why()
 GET         /contact                                                                   controllers.ContactController.contact()
-GET         /thanks                                                                    controllers.BookingController.thanks()
 GET         /signed-out                                                                controllers.SignOutController.signedOut()
 GET         /choose-length                                                             controllers.BookingController.chooseLength()
 GET         /book/:lessonLength                                                        controllers.BookingController.book(lessonLength: Int)
@@ -17,7 +16,7 @@ GET         /booking-contact/:numOfLessons/:lessonLength/:date/:time            
 POST        /booking-contact/:numOfLessons/:lessonLength/:date/:time                   controllers.BookingController.saveBookingContactDetails(numOfLessons: Int, lessonLength: Int, date: String, time: String)
 GET         /booking-summary/:numOfLessons/:lessonLength/:date/:time/:studentId        controllers.BookingController.bookingSummary(numOfLessons: Int, lessonLength: Int, date: String, time: String, studentId: java.util.UUID)
 POST        /payment-intent                                                            controllers.PaymentController.paymentIntent()
-GET         /payment-confirmation                                                      controllers.PaymentController.paymentConfirmation()
+GET         /payment-confirmation                                                      controllers.PaymentController.paymentConfirmation(payment_intent: Option[String])
 POST        /webhook                                                                   controllers.PaymentController.webhook()
 
 # Map static resources from the /public folder to the /assets URL path

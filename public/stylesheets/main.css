@@ -38,6 +38,7 @@ a:hover {
     grid-column: 1/4;
     text-align: left;
     align-self: end;
+    display: flex;
 }
 
 .title-text {
@@ -46,6 +47,7 @@ a:hover {
     font-family: 'Satisfy', cursive;
     margin-bottom: 0;
     font-size: 3em;
+    margin-top: .5em;
 }
 
 .title-text-tagline {
@@ -64,13 +66,27 @@ body {
     background-color: #ffe8d6;
 }
 
+.logo-image {
+    width: 95px;
+    margin-left: 20px;
+    margin-top: 15px;
+    height: 100px;
+}
+
+.ism-logo {
+    width: 200px;
+    height: 200px;
+    float: right;
+    margin-right: 15px;
+}
+
 .row-nav {
     font-size: large;
     background-image: linear-gradient(to bottom, #f35001, #feaf17);
     display: grid;
     flex-direction: row;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 50% 50%;
+    grid-template-rows: 1fr 3fr;
 }
 
 .cards {
@@ -282,7 +298,7 @@ li.card:hover {
 }
 
 .price-submit-link  {
-    background-color: #f35001;
+    background-color: #ffe8d6;
     color: black;
     padding: 14px 25px;
     text-align: center;
@@ -307,6 +323,7 @@ li.card:hover {
 .amount-description {
     text-align: center;
     font-weight: 500;
+    font-size: 20px;
 }
 
 .container {
@@ -370,7 +387,7 @@ nav ul a {
 
 .main-body {
     display: grid;
-    grid-template-rows: 1fr 8fr 1fr;
+    grid-template-rows: 1fr 4fr 1fr;
     margin: 0;
 }
 

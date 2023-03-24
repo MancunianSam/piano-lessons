@@ -6,8 +6,9 @@ import services.AmountService.Prices
 class AmountService @Inject() () {
   def getPrices(lessonLength: Int): Prices = {
     lessonLength match {
-      case 30 => Prices(2000, 5500, 11000)
-      case 60 => Prices(3000, 8500, 17000)
+      case 0  => Prices(0, 0, 0)
+      case 30 => Prices(1500, 4500, 8000)
+      case 60 => Prices(3000, 9000, 17000)
     }
   }
   def calculateAmount(numOfLessons: Int, lessonLength: Int): Int = {

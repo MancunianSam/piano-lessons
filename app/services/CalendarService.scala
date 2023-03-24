@@ -64,6 +64,12 @@ class CalendarService @Inject()(googleConfiguration: GoogleConfiguration) {
     event.setDescription(contactForm.toString)
     googleConfiguration.addEvent(calendarId, event)
   }
+
+  def isEventAlreadyBooked(startTime: Timestamp, endTime: Timestamp): Boolean = {
+    val calendarId = googleConfiguration.calendarListItems.head.getId
+    val events = googleConfiguration.listEvents(calendarId, new DateTime(startTime), new DateTime(endTime))
+    events.nonEmpty
+  }
 }
 
 object CalendarService {
