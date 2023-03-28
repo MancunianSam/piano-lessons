@@ -1,50 +1,42 @@
 package controllers
 
-import auth.OidcSecurity
 import com.google.inject.Inject
-import configuration.StripeConfiguration
-import controllers.BookingController.{Booking, Contact}
-import org.pac4j.play.scala.SecurityComponents
+import controllers.BookingController.Contact
 import play.api.Configuration
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.mvc.{Action, AnyContent, Request}
-import repositories.TimesRepository.formattedPattern
-import repositories.{StudentRepository, TimesRepository}
-import services.{AmountService, CalendarService, EmailService}
+import play.api.mvc._
+import services.{AmountService, BookingService, CalendarService}
 
-import java.time.LocalDateTime
+import java.time.{DayOfWeek, LocalDate}
 import java.util.{Calendar, Locale, UUID}
 import scala.concurrent.{ExecutionContext, Future}
 
 class BookingController @Inject()(
-                                   val controllerComponents: SecurityComponents,
+                                   val controllerComponents: MessagesControllerComponents,
                                    val calendarService: CalendarService,
                                    val amountService: AmountService,
-                                   val emailService: EmailService,
-                                   val stripeConfiguration: StripeConfiguration,
-                                   val studentRepository: StudentRepository,
-                                   val timesRepository: TimesRepository,
+                                   val bookingService: BookingService,
                                    configuration: Configuration
-                                 )(implicit val executionContext: ExecutionContext) extends OidcSecurity {
+                                 )(implicit val executionContext: ExecutionContext) extends MessagesBaseController {
 
   def contactForm: Form[Contact] = Form[Contact](
     mapping(
-      "email" -> email.verifying("Please enter an email address", a => a.nonEmpty),
-      "name" -> nonEmptyText,
+      "email" -> email,
+      "name" -> text.verifying("Please enter your name", a => a.nonEmpty),
       "student" -> optional(text),
       "level" -> optional(text),
-      "phone" -> nonEmptyText,
+      "phone" -> text.verifying("Please enter a phone number", a => a.nonEmpty),
       "notes" -> optional(text)
     )
     (Contact.apply)(Contact.unapply)
   )
 
-  def chooseLength(): Action[AnyContent] = Action { implicit request: Request[Any] =>
+  def chooseLength(): Action[AnyContent] = Action { implicit request: MessagesRequest[Any] =>
     Ok(views.html.chooseLength())
   }
 
-  def book(lessonLength: Int): Action[AnyContent] = Action { implicit request: Request[Any] =>
+  def book(lessonLength: Int): Action[AnyContent] = Action { implicit request: MessagesRequest[Any] =>
     Ok(views.html.book(amountService.getPrices(lessonLength), lessonLength))
   }
 
@@ -67,69 +59,46 @@ class BookingController @Inject()(
     }
   }
 
-  def bookingContactDetails(numOfLessons: Int, lessonLength: Int, date: String, time: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
+  def bookingContactDetails(numOfLessons: Int, lessonLength: Int, date: String, time: String): Action[AnyContent] = Action { implicit request: MessagesRequest[Any] =>
     Ok(views.html.bookingContactDetails(contactForm, numOfLessons, lessonLength, date, time))
   }
 
-  def saveBookingContactDetails(numOfLessons: Int, lessonLength: Int, date: String, time: String): Action[AnyContent] = Action.async { implicit request: Request[Any] =>
+  def saveBookingContactDetails(numOfLessons: Int, lessonLength: Int, date: String, time: String): Action[AnyContent] = Action.async { implicit request: MessagesRequest[Any] =>
     contactForm.bindFromRequest().fold(err => {
       Future.successful(BadRequest(views.html.bookingContactDetails(err, numOfLessons, lessonLength, date, time)))
     }, contact => {
       if (lessonLength > 0) {
-        val amount = amountService.calculateAmount(numOfLessons, lessonLength)
-        for {
-          student <- studentRepository.addStudent(contact, amount, None)
-          paymentIntent = stripeConfiguration.paymentIntent(amount, student.id)
-          _ <- studentRepository.updatePaymentIntentId(student.id, paymentIntent.getId)
-          booking <- createBooking(numOfLessons, lessonLength, date, time, student.id)
-          _ <- timesRepository.addTimes(booking)
-        } yield {
-          Redirect(routes.BookingController.bookingSummary(numOfLessons, lessonLength, date, time, student.id))
-        }
+        bookingService.createPaidBooking(numOfLessons, lessonLength, date, time, contact).map(id => {
+          Redirect(routes.BookingController.bookingSummary(numOfLessons, lessonLength, date, time, id))
+        })
       } else {
-        for {
-          student <- studentRepository.addStudent(contact, 0, chargeCompleted = true)
-          booking <- createBooking(numOfLessons, 30, date, time, student.id)
-          times <- timesRepository.addTimes(booking)
-        } yield {
-          times.map(time => {
-            val contact = Contact(student.email, student.name, student.student, student.level, student.phone, student.notes)
-            calendarService.putEvent(time.startDate, time.endDate, contact)
-          })
+        bookingService.createFreeBooking(numOfLessons, date, time, contact).map(booking => {
           Ok(views.html.paymentConfirmation(booking))
-        }
+        })
       }
     })
   }
 
   def times(numOfLessons: Int, lessonLength: Int, date: String): Action[AnyContent] = Action { implicit request: Request[Any] =>
     val updateLessonLength = if (lessonLength == 0) 30 else lessonLength
-    val slots = calendarService.getAvailableSlots(date, numOfLessons, updateLessonLength)
+    val endHour = if(isWeekend(date)) 12 else 20
+    val slots = calendarService.getAvailableSlots(date, numOfLessons, updateLessonLength, endHour)
     Ok(views.html.times(numOfLessons, lessonLength, date, slots))
-
   }
 
   def bookingSummary(numOfLessons: Int, lengthOfLesson: Int, date: String, time: String, studentId: UUID): Action[AnyContent] = Action.async { implicit request: Request[Any] =>
     val apiKey = configuration.get[String]("stripe.public")
-    createBooking(numOfLessons, lengthOfLesson, date, time, studentId).map(booking => Ok(views.html.bookingSummary(booking, apiKey)))
+    val cost = amountService.calculateAmount(numOfLessons, lengthOfLesson)
+    bookingService.createBooking(numOfLessons, lengthOfLesson, date, time, studentId, cost)
+      .map(booking => Ok(views.html.bookingSummary(booking, apiKey)))
   }
 
-  private def createBooking(numOfLessons: Int, lengthOfLesson: Int, date: String, time: String, studentId: UUID) = {
-    val cost = amountService.calculateAmount(numOfLessons, lengthOfLesson)
-    val dates = (0 until numOfLessons).toList.map(plusWeeks => {
-      val localDateTime = LocalDateTime.parse(s"${date}T$time:00").plusWeeks(plusWeeks)
-      localDateTime.format(formattedPattern)
-    })
-    studentRepository.getStudent(studentId).map(student => {
-      val email = student.head.email
-      Booking(studentId, email, numOfLessons, lengthOfLesson, dates, cost)
-    })
+  private def isWeekend(date: String): Boolean = {
+    val localDate = LocalDate.parse(date)
+    List(DayOfWeek.SUNDAY, DayOfWeek.SATURDAY).contains(localDate.getDayOfWeek)
   }
 }
-
 object BookingController {
-  case class Booking(studentId: UUID, email: String, numberOfLessons: Int, lengthOfLesson: Int, dates: List[String], totalCost: Int)
-
   case class Contact(email: String, name: String, student: Option[String], level: Option[String], phone: String, notes: Option[String]) {
     override def toString: String = {
       s"""

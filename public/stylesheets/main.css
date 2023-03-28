@@ -153,6 +153,30 @@ body {
     grid-template-rows: 1fr 2fr 1fr;
 }
 
+.contact-card {
+    border: solid;
+    box-shadow: 0 6px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    display: grid;
+    grid-template-rows: 2fr 1fr;
+    justify-items: center;
+}
+
+.contact-text {
+    font-size: 20px;
+    margin: 8px;
+    padding: 8px;
+}
+
+.error-summary {
+    margin: 10px;
+}
+
+.payment-confirmation {
+    margin-left: 10px;
+}
+
+
 .time-card {
     border: solid;
     box-shadow: 0 6px 8px 0 rgba(0,0,0,0.2);
@@ -229,6 +253,16 @@ body {
 .btn {
     font-family: Baskervville serif;
     background-color: aliceblue;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: grey 1px solid;
+}
+
+.disabled-btn {
+    font-family: Baskervville serif;
+    background-color: lightgrey;
     color: black;
     text-align: center;
     text-decoration: none;
@@ -387,12 +421,18 @@ nav ul a {
 
 .main-body {
     display: grid;
-    grid-template-rows: 1fr 4fr 1fr;
+    grid-template-rows: 0.5fr 4fr 1fr;
     margin: 0;
 }
 
 .payment-form {
     justify-self: start;
+}
+
+
+.contact-card > svg {
+    width: 20vw;
+    height: 20vh;
 }
 
 input {

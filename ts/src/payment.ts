@@ -1,6 +1,6 @@
 import {Appearance, Stripe, StripeElements, StripePaymentElementOptions} from '@stripe/stripe-js';
 
-interface Input {
+export interface Input {
   studentId: string
   numberOfLessons: number
   lengthOfLesson: number

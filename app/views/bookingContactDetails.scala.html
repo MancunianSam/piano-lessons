@@ -7,12 +7,18 @@
     <fieldset>
       <legend>
         <h2>Please enter your contact details</h2>
+        <h3>Fields with a * are required</h3>
       </legend>
+      @for(error <- form.errors) {
+        <span class="error-summary">
+          <a href="#@error.key" class="error-text">@Messages(error.message)</a>
+        </span>
+      }
       @CSRF.formField
-      <label for="email">Email</label>
+      <label for="email">Email<sup>*</sup></label>
       <input type="email" id="email" name="email" class="@if(form("email").error.isDefined) {err}">
       @contactError(form, "email")
-      <label for="name">Name</label>
+      <label for="name">Name<sup>*</sup></label>
       <input type="text" id="name" name="name" class="@if(form("email").error.isDefined) {err}">
       @contactError(form, "name")
       <label for="student">Student name if different</label>
@@ -21,7 +27,7 @@
       <label for="name">Level</label>
       <input type="text" placeholder="Beginner or Grade 1" id="level" name="level" class="@if(form("level").error.isDefined) {err}">
       @contactError(form, "level")
-      <label for="phone">Phone</label>
+      <label for="phone">Phone<sup>*</sup></label>
       <input type="tel" id="phone" name="phone" class="@if(form("email").error.isDefined) {err}">
       @contactError(form, "phone")
       <label for="notes">Notes</label>

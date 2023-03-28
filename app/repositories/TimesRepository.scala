@@ -1,20 +1,19 @@
 package repositories
 
 import com.google.inject.Inject
-import controllers.BookingController.Booking
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import repositories.Tables.TimesRow
-import slick.jdbc.JdbcProfile
-import repositories.Tables._
+import repositories.Tables.{TimesRow, _}
 import repositories.TimesRepository.formattedPattern
+import services.BookingService.Booking
+import slick.jdbc.JdbcProfile
 
-import java.sql.{Date, Timestamp}
-import java.time.{LocalDateTime, ZoneOffset}
+import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class TimesRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext)
+class TimesRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   import profile.api._

@@ -1,21 +1,19 @@
 package controllers
 
 import auth.OidcSecurity
-import services.EmailService.{Order, OrderDates}
 import com.google.inject.Inject
 import com.stripe.model.PaymentIntent
 import configuration.StripeConfiguration
+import controllers.BookingController.Contact
 import controllers.PaymentController._
 import org.pac4j.play.scala.SecurityComponents
-import play.api.Configuration
 import play.api.libs.json.Writes._
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, Request}
-import repositories.{StudentRepository, Tables, TimesRepository}
-import services.{AmountService, CalendarService, EmailService}
-import controllers.BookingController.{Booking, Contact}
-import play.api.libs.ws.WSResponse
 import repositories.TimesRepository.formattedPattern
+import repositories.{StudentRepository, TimesRepository}
+import services.BookingService._
+import services.{AmountService, BookingService, CalendarService, EmailService}
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,7 +24,8 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
                                   studentRepository: StudentRepository,
                                   timesRepository: TimesRepository,
                                   amountService: AmountService,
-                                  emailService: EmailService
+                                  emailService: EmailService,
+                                  bookingService: BookingService
                                  )(implicit val executionContext: ExecutionContext) extends OidcSecurity {
 
   def paymentConfirmation(paymentIntentId: Option[String]): Action[AnyContent] = Action.async { implicit request: Request[Any] =>
@@ -56,7 +55,11 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
           (for {
             _ <- studentRepository.updateChargeCompleted(paymentIntentId)
             rows <- timesRepository.getTimes(paymentIntentId)
-            _ <- sendOrderEmail(rows)
+            (student, times) = rows.groupBy(_._2).head
+            order = bookingService.createOrder(student, times.map(_._1))
+            _ <- emailService.sendOrderEmail(student.email, order)
+            adminConfirmation = order.map(order => order.copy(title = "You have a new booking"))
+            _ <- emailService.sendOrderEmail("bookings@clairepalmerpiano.co.uk", adminConfirmation)
           } yield {
             rows.map(row => {
               val (times, student) = row
@@ -69,24 +72,6 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
         }
       }
     )
-  }
-
-  private def sendOrderEmail(rows: Seq[(Tables.TimesRow, Tables.StudentRow)]): Future[WSResponse] = {
-    for {
-      time <- rows.headOption.map(_._1)
-      student <- rows.headOption.map(_._2)
-      totalCost <- student.totalCost
-    } yield {
-      val dates = rows.map(_._1).map(_.startDate.toLocalDateTime).
-        sorted.zipWithIndex.map { case (date, idx) =>
-        OrderDates(idx + 1, date.format(formattedPattern))
-      }.toList
-      val order = Order(s"${time.lengthOfLessons} minutes", time.numberOfLessons, totalCost.toInt / 100, dates)
-      emailService.sendOrderEmail(student.email, order)
-    }
-  } match {
-    case Some(value) => value
-    case None => Future.failed(new RuntimeException("Email sending failed"))
   }
 
   def paymentIntent(): Action[JsValue] = Action.async(parse.json) { implicit request: Request[JsValue] =>

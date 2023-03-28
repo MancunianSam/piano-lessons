@@ -5,6 +5,8 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala).enablePlugins(SbtWeb)
 
+lazy val testContainersVersion = "0.40.14"
+
 scalaVersion := "2.13.10"
 val circeVersion = "0.14.1"
 val pac4jVersion = "5.7.0"
@@ -27,7 +29,9 @@ libraryDependencies ++= Seq(
   "org.pac4j" % "pac4j-http" % pac4jVersion exclude("com.fasterxml.jackson.core", "jackson-databind"),
   "org.pac4j" % "pac4j-oidc" % pac4jVersion exclude("commons-io", "commons-io") exclude("com.fasterxml.jackson.core", "jackson-databind"),
   "ch.qos.logback" % "logback-classic" % "1.4.5",
-  "com.stripe" % "stripe-java" % "22.11.0"
+  "com.stripe" % "stripe-java" % "22.11.0",
+  "com.softwaremill.sttp.client3" %% "core" % "3.8.13",
+  "com.softwaremill.sttp.client3" %% "async-http-client-backend-future" % "3.8.13"
 ) ++ Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",
@@ -38,7 +42,9 @@ libraryDependencies ++= Seq(
   "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
   "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test,
   "org.mockito" % "mockito-core" % "2.7.22" % Test,
-  "com.github.tomakehurst" % "wiremock-jre8" % "2.35.0" % Test
+  "com.github.tomakehurst" % "wiremock-jre8" % "2.35.0" % Test,
+  "com.dimafeng" %% "testcontainers-scala-scalatest" % testContainersVersion % Test,
+  "com.dimafeng" %% "testcontainers-scala-postgresql" % testContainersVersion % Test
 )
 
 pipelineStages := Seq(cssCompress, digest)

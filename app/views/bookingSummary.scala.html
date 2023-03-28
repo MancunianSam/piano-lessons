@@ -1,6 +1,6 @@
 @import views.html.helper.CSRF
 @import views.html.partials.spinner
-@import controllers.BookingController.Booking
+@import services.BookingService.Booking
 @import views.html.partials.summary
 @(booking: Booking, apiKey: String)(implicit requestHeader: RequestHeader)
 @main("Booking summary") {

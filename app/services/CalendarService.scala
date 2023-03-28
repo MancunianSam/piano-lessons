@@ -1,7 +1,7 @@
 package services
 
 import com.google.api.client.util.DateTime
-import com.google.api.services.calendar.model.{Event, EventDateTime}
+import com.google.api.services.calendar.model.{CalendarListEntry, Event, EventDateTime}
 import com.google.inject.Inject
 import configuration.GoogleConfiguration
 import controllers.BookingController.Contact
@@ -18,23 +18,25 @@ import scala.concurrent.Future
 class CalendarService @Inject()(googleConfiguration: GoogleConfiguration) {
 
   private val startOfDay = 9
-  private val endOfDay = 18
+
+  private def calendarId: String = {
+    googleConfiguration.calendarListItems.filter(_.getId.contains("clairelpalmer")).head.getId
+  }
 
   @tailrec
-  private def getAllTimesForDay(increment: Int, allTimes: List[EventRange]): List[EventRange] = {
+  private def getAllTimesForDay(increment: Int, allTimes: List[EventRange], endOfDay: Int): List[EventRange] = {
     val currentTime = allTimes.head.end
     if (currentTime.getHour == endOfDay) {
       allTimes
     } else {
-      getAllTimesForDay(increment, EventRange(currentTime, currentTime.plusMinutes(increment)) :: allTimes)
+      getAllTimesForDay(increment, EventRange(currentTime, currentTime.plusMinutes(increment)) :: allTimes, endOfDay)
     }
   }
 
-  def getAvailableSlots(date: String, numberOfLessons: Int, lengthOfLesson: Int): List[String] = {
-    val calendarId = googleConfiguration.calendarListItems.head.getId
+  def getAvailableSlots(date: String, numberOfLessons: Int, lengthOfLesson: Int, endOfDay: Int): List[String] = {
     val startTime = LocalTime.of(startOfDay, 0)
     val firstRange = EventRange(startTime, startTime.plusMinutes(lengthOfLesson))
-    val allTimes = getAllTimesForDay(lengthOfLesson, firstRange :: Nil)
+    val allTimes = getAllTimesForDay(lengthOfLesson, firstRange :: Nil, endOfDay)
     val allLessonTimes = (0 until numberOfLessons).toList.map((plusWeeks: Int) => {
       val now = LocalDate.parse(date).plusWeeks(plusWeeks)
       now -> allTimes
@@ -56,19 +58,12 @@ class CalendarService @Inject()(googleConfiguration: GoogleConfiguration) {
   }
 
   def putEvent(startTime: Timestamp, endTime: Timestamp, contactForm: Contact): Event = {
-    val calendarId = googleConfiguration.calendarListItems.head.getId
     val event = new Event()
     event.setStart(new EventDateTime().setTime(startTime))
     event.setEnd(new EventDateTime().setTime(endTime))
     event.setSummary(s"Booking for ${contactForm.email}")
     event.setDescription(contactForm.toString)
     googleConfiguration.addEvent(calendarId, event)
-  }
-
-  def isEventAlreadyBooked(startTime: Timestamp, endTime: Timestamp): Boolean = {
-    val calendarId = googleConfiguration.calendarListItems.head.getId
-    val events = googleConfiguration.listEvents(calendarId, new DateTime(startTime), new DateTime(endTime))
-    events.nonEmpty
   }
 }
 
