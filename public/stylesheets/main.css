@@ -390,7 +390,8 @@ img {
 
 .why-page {
     display: grid;
-    grid-template-columns: 5fr 1fr
+    grid-template-columns: 5fr 1fr;
+    margin-left: 10px;
 }
 .body-image {
     grid-column: 2;
