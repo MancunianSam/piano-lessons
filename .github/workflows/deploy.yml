@@ -20,6 +20,7 @@ jobs:
         run: |
           npm --prefix ts ci
           npm --prefix ts run build
+          mkdir public/javascripts
           cp ts/dist/payment.js public/javascripts/
           sbt dist
       - name: Login to Docker Hub
