@@ -8,14 +8,14 @@ import io.circe.syntax._
 import play.api.Configuration
 
 import javax.inject.Inject
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import sttp.client3._
 import sttp.client3.asynchttpclient.future.AsyncHttpClientFutureBackend
 
-class EmailService @Inject()(configuration: Configuration) {
+class EmailService @Inject()(configuration: Configuration)(implicit val executionContext: ExecutionContext) {
   private val backend: SttpBackend[Future, Any] = AsyncHttpClientFutureBackend()
 
-  def sendOrderEmail(emailAddress: String, order: Option[Order]): Future[Response[Either[String, String]]] = {
+  def sendOrderEmail(emailAddress: String, order: Option[Order]): Future[Int] = {
     order match {
       case Some(value) =>
         val fromEmail = "noreply@clairepalmerpiano.co.uk"
@@ -26,7 +26,9 @@ class EmailService @Inject()(configuration: Configuration) {
         basicRequest
           .body(email)
           .headers(Map("Authorization" -> auth, "Content-Type" -> "application/json"))
-          .post(uri"${configuration.get[String]("sendgrid.url")}").send(backend)
+          .post(uri"${configuration.get[String]("sendgrid.url")}")
+          .send(backend)
+          .map(res => res.code.code)
       case None => Future.failed(new RuntimeException(s"Missing data for student"))
     }
 

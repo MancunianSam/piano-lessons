@@ -1,15 +1,14 @@
 package controllers
 
-import auth.OidcSecurity
+
 import com.google.inject.Inject
 import com.stripe.model.PaymentIntent
 import configuration.StripeConfiguration
-import controllers.BookingController.Contact
 import controllers.PaymentController._
-import org.pac4j.play.scala.SecurityComponents
+import play.api.Logging
 import play.api.libs.json.Writes._
 import play.api.libs.json._
-import play.api.mvc.{Action, AnyContent, Request}
+import play.api.mvc._
 import repositories.TimesRepository.formattedPattern
 import repositories.{StudentRepository, TimesRepository}
 import services.BookingService._
@@ -18,7 +17,7 @@ import services.{AmountService, BookingService, CalendarService, EmailService}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-class PaymentController @Inject()(val controllerComponents: SecurityComponents,
+class PaymentController @Inject()(val controllerComponents: MessagesControllerComponents,
                                   stripeConfiguration: StripeConfiguration,
                                   calendarService: CalendarService,
                                   studentRepository: StudentRepository,
@@ -26,7 +25,7 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
                                   amountService: AmountService,
                                   emailService: EmailService,
                                   bookingService: BookingService
-                                 )(implicit val executionContext: ExecutionContext) extends OidcSecurity {
+                                 )(implicit val executionContext: ExecutionContext) extends MessagesBaseController with Logging {
 
   def paymentConfirmation(paymentIntentId: Option[String]): Action[AnyContent] = Action.async { implicit request: Request[Any] =>
     timesRepository.getTimes(paymentIntentId.getOrElse("")).map(times => {
@@ -43,6 +42,9 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
         val booking = Booking(student.id, student.email, numberOfLessons, lengthOfLesson, dates, totalCost.toInt)
         Ok(views.html.paymentConfirmation(booking))
       }).getOrElse(Redirect(routes.HomeController.index()))
+    }).recover(err => {
+      logger.error(err.getMessage, err)
+      Redirect(routes.HomeController.index())
     })
   }
 
@@ -63,12 +65,12 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
           } yield {
             rows.map(row => {
               val (times, student) = row
-              val contact = Contact(student.email, student.name, student.student, student.level, student.phone, student.notes)
+              val contact = bookingService.createContact(student)
               calendarService.putEvent(times.startDate, times.endDate, contact)
             })
-          }).map(_ => Ok(Json.obj("" -> chargeEvent.id)))
+          }).map(_ => Ok(Json.obj("id" -> chargeEvent.id)))
         } else {
-          Future.successful(Ok(Json.obj("" -> chargeEvent.id)))
+          Future.successful(Ok(Json.obj("id" -> chargeEvent.id)))
         }
       }
     )
@@ -87,8 +89,7 @@ class PaymentController @Inject()(val controllerComponents: SecurityComponents,
           val paymentIntent: PaymentIntent = intentId match {
             case Some(intentId) =>
               stripeConfiguration.getPaymentIntent(intentId)
-            case None =>
-              stripeConfiguration.paymentIntent(amountService.calculateAmount(intentInput.numberOfLessons, intentInput.lengthOfLesson), studentList.head.id)
+            case None => stripeConfiguration.paymentIntent(amountService.calculateAmount(intentInput.numberOfLessons, intentInput.lengthOfLesson), intentInput.studentId)
           }
           val response = Json.toJson(CreatePaymentResponse(paymentIntent.getClientSecret))
           Ok(response)

@@ -72,7 +72,7 @@ class BookingController @Inject()(
           Redirect(routes.BookingController.bookingSummary(numOfLessons, lessonLength, date, time, id))
         })
       } else {
-        bookingService.createFreeBooking(numOfLessons, date, time, contact).map(booking => {
+        bookingService.createFreeBooking(1, date, time, contact).map(booking => {
           Ok(views.html.paymentConfirmation(booking))
         })
       }

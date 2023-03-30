@@ -1,16 +1,12 @@
 package controllers
 
-import com.dimafeng.testcontainers.JdbcDatabaseContainer.CommonParams
 import com.dimafeng.testcontainers.PostgreSQLContainer
-import com.dimafeng.testcontainers.scalatest.TestContainersForAll
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.{ok, post, urlEqualTo}
-import com.typesafe.config.ConfigFactory
 import modules.{LocalGoogleService, LocalStripeService}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.Configuration
 import play.api.Play.materializer
-import play.api.db.slick.DatabaseConfigProvider
 import play.api.http.Status.SEE_OTHER
 import play.api.test.CSRFTokenHelper.CSRFFRequestHeader
 import play.api.test.Helpers._
@@ -18,22 +14,24 @@ import play.api.test._
 import repositories.{StudentRepository, TimesRepository}
 import services.AmountService.Prices
 import services.{AmountService, BookingService, CalendarService, EmailService}
-import slick.basic.{BasicProfile, DatabaseConfig}
-import slick.jdbc.JdbcProfile
-import utils.PianoLessonsUtils
+import utils.{PianoLessonsUtils, TestContainersUtils}
 
-import java.sql.{DriverManager, PreparedStatement, Types}
-import java.util.{Calendar, Locale, Properties, UUID}
+import java.util.{Calendar, Locale, UUID}
 import scala.concurrent.ExecutionContext
-import scala.jdk.CollectionConverters.MapHasAsJava
-import scala.reflect.ClassTag
 
-class BookingControllerSpec extends PianoLessonsUtils with TestContainersForAll with TableDrivenPropertyChecks {
+class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyChecks with TestContainersUtils {
   implicit val ec: ExecutionContext = ExecutionContext.global
-
   val sendGridServer = new WireMockServer(9002)
-  sendGridServer.stubFor(post(urlEqualTo("/")).willReturn(ok()))
-  sendGridServer.start()
+
+  override def beforeAll(): Unit = {
+    sendGridServer.stubFor(post(urlEqualTo("/")).willReturn(ok()))
+    sendGridServer.start()
+  }
+
+  override def afterAll(): Unit = {
+    sendGridServer.stop()
+  }
+
 
   val testGoogleService = new LocalGoogleService()
   val testStripeConfiguration = new LocalStripeService()
@@ -187,7 +185,8 @@ class BookingControllerSpec extends PianoLessonsUtils with TestContainersForAll 
       val date = "2023-03-28"
       val time = "09:00"
       val id = UUID.randomUUID()
-      createStudent(container.jdbcUrl, id)
+      val connection = getConnection(container.jdbcUrl)
+      createStudent(connection, id)
       val response = createController(container.mappedPort(5432))
         .bookingSummary(numOfLessons, lessonLength, date, time, id)
         .apply(
@@ -199,34 +198,11 @@ class BookingControllerSpec extends PianoLessonsUtils with TestContainersForAll 
     }
   }
 
-  private def createStudent(url: String, id: UUID): Int = {
-    val properties = new Properties()
-    properties.put("user", "piano")
-    properties.put("password", "password")
-    val connection = DriverManager.getConnection(url, properties)
-
-    val sql = "INSERT INTO student (id, email, name, phone) VALUES (?, ?, ?, ?)"
-    val ps: PreparedStatement = connection.prepareStatement(sql)
-    ps.setObject(1, id, Types.OTHER)
-    ps.setString(2, "test@test.com")
-    ps.setString(3, "Name")
-    ps.setString(4, "Phone")
-    ps.executeUpdate()
-  }
-
   private def createController(port: Int) = {
     val calendarService = new CalendarService(testGoogleService)
     val amountService = new AmountService()
 
-    val dbConfigProvider = new DatabaseConfigProvider {
-
-      override def get[P <: BasicProfile]: DatabaseConfig[P] = {
-        val cls: ClassTag[P] = ClassTag[P](classOf[JdbcProfile])
-        val config = ConfigFactory.parseMap(Map("slick.dbs.default.db.url" -> s"jdbc:postgresql://localhost:$port/piano-lessons").asJava)
-          .withFallback(ConfigFactory.load())
-        DatabaseConfig.forConfig("slick.dbs.default", config)(cls)
-      }
-    }
+    val dbConfigProvider = createDbConfigProvider(port)
     val studentRepository = new StudentRepository(dbConfigProvider)
     val timesRepository = new TimesRepository(dbConfigProvider)
     val configuration = Configuration.load(app.environment)
@@ -234,23 +210,5 @@ class BookingControllerSpec extends PianoLessonsUtils with TestContainersForAll 
     val emailService = new EmailService(configuration)
     val bookingService = new BookingService(studentRepository, timesRepository, amountService, calendarService, emailService, testStripeConfiguration)
     new BookingController(stubMessagesControllerComponents(), calendarService, amountService, bookingService, configuration)
-  }
-
-  override type Containers = PostgreSQLContainer
-
-  override def startContainers(): PostgreSQLContainer = {
-    val container = PostgreSQLContainer.Def(
-      databaseName = "piano-lessons",
-      username = "piano",
-      password = "password",
-      commonJdbcParams = CommonParams(initScriptPath = Option("init.sql"))
-    ).createContainer()
-
-    container.start()
-    container
-  }
-
-  override def afterContainersStart(containers: PostgreSQLContainer): Unit = {
-    super.afterContainersStart(containers)
   }
 }

@@ -11,5 +11,11 @@ class HomeControllerSpec extends PianoLessonsUtils {
       val response = controller.index()(FakeRequest(GET, "/"))
       contentAsString(response) must include("Piano")
     }
+
+    "render the why page" in {
+      val controller = new HomeController(stubMessagesControllerComponents())
+      val response = controller.why()(FakeRequest(GET, "/why-piano"))
+      contentAsString(response) must include("Why choose Piano?")
+    }
   }
 }

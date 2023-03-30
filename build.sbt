@@ -75,3 +75,4 @@ slick := {
   Seq(file)
 }
 
+coverageExcludedPackages := "<empty>;Reverse.*;.*OidcSecurity.*;.*GoogleService.*;.*StripeService.*;.*Tables.*;.*Routes.*;.*template.*;"

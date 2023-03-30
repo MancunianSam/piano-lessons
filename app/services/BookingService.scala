@@ -5,7 +5,7 @@ import configuration.StripeConfiguration
 import controllers.BookingController.Contact
 import repositories.Tables._
 import repositories.TimesRepository.formattedPattern
-import repositories.{StudentRepository, TimesRepository}
+import repositories.{StudentRepository, Tables, TimesRepository}
 import services.BookingService._
 import services.EmailService._
 
@@ -43,11 +43,15 @@ class BookingService @Inject()(val studentRepository: StudentRepository,
       _ <- emailService.sendOrderEmail("bookings@clairepalmerpiano.co.uk", adminConfirmation)
     } yield {
       times.map(time => {
-        val contact = Contact(student.email, student.name, student.student, student.level, student.phone, student.notes)
+        val contact = createContact(student)
         calendarService.putEvent(time.startDate, time.endDate, contact)
       })
       booking
     }
+  }
+
+  def createContact(student: Tables.StudentRow): Contact = {
+    Contact(student.email, student.name, student.student, student.level, student.phone, student.notes)
   }
 
   def createPaidBooking(numOfLessons: Int, lessonLength: Int, date: String, time: String, contact: Contact): Future[UUID] = {
@@ -63,7 +67,7 @@ class BookingService @Inject()(val studentRepository: StudentRepository,
     }
   }
 
-  def createOrder(student: StudentRow, times: Seq[TimesRow]) = {
+  def createOrder(student: StudentRow, times: Seq[TimesRow]): Option[Order] = {
     for {
       time <- times.headOption
       totalCost <- student.totalCost
