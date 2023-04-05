@@ -1,7 +1,7 @@
 package services
 
 import com.google.api.client.util.DateTime
-import com.google.api.services.calendar.model.{CalendarListEntry, Event, EventDateTime}
+import com.google.api.services.calendar.model.{Event, EventDateTime}
 import com.google.inject.Inject
 import configuration.GoogleConfiguration
 import controllers.BookingController.Contact
@@ -10,8 +10,8 @@ import services.CalendarService.{EventRange, EventUtils}
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneOffset}
-import java.util.Date
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId, ZoneOffset}
+import java.util.{Date, TimeZone}
 import scala.annotation.tailrec
 import scala.concurrent.Future
 
@@ -82,8 +82,10 @@ object CalendarService {
     }
 
     def setTime(date: Timestamp): EventDateTime = {
-      val dateTime = new DateTime(date.getTime)
+      val dstOffset = TimeZone.getTimeZone("Europe/London").getOffset(new Date().getTime)
+      val dateTime = new DateTime(date.getTime - dstOffset)
       eventDateTime.setDateTime(dateTime)
+      eventDateTime.setTimeZone("Europe/London")
       eventDateTime
     }
   }
