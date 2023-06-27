@@ -9,7 +9,7 @@ class AmountServiceSpec extends PlaySpec with TableDrivenPropertyChecks {
   val priceTable: TableFor2[Int, Prices] = Table(
     ("lessonLength", "prices"),
     (0, Prices(0, 0, 0)),
-    (30, Prices(1500, 4500, 8000)),
+    (30, Prices(1500, 4500, 7500)),
     (60, Prices(3000, 9000, 17000)),
   )
 
@@ -28,7 +28,7 @@ class AmountServiceSpec extends PlaySpec with TableDrivenPropertyChecks {
     (6, 0, 0),
     (1, 30, 1500),
     (3, 30, 4500),
-    (6, 30, 8000),
+    (6, 30, 7500),
     (1, 60, 3000),
     (3, 60, 9000),
     (6, 60, 17000)

@@ -1,0 +1,11 @@
+@(dates: List[String])
+<li>
+    <ul class="booking-summary">
+        <li><h2>Your lesson times</h2></li>
+        @for((date, idx) <- dates.zipWithIndex) {
+            <li><h3 class="bold">Lesson @{idx + 1}</h3> @date</li>
+            <button class="submit-button" type="submit" value="skip@{idx + 1}">Skip</button>
+        }
+@*        <li><a class="time-link" href="@routes.BookingController.bookingContactDetails()"></li>*@
+    </ul>
+</li>

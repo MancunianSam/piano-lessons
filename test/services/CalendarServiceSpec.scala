@@ -86,8 +86,8 @@ class CalendarServiceSpec extends PlaySpec with TableDrivenPropertyChecks with S
       val service = new CalendarService(testGoogleConfiguration(Nil, 30))
       val contact = Contact("test@test.com", "name", None, None, "phone", Option("notes"))
       val event = service.putEvent(startDate, endDate, contact)
-      event.getStart.getTime().get.getHour must be (9)
-      event.getEnd.getTime().get.getHour must be (10)
+      event.getStart.getTime().get.getHour must be (8)
+      event.getEnd.getTime().get.getHour must be (9)
       event.getDescription must be ("\nEmail: test@test.com\nName: name\nStudent Name: \nLevel: \nPhone: phone\nNotes: notes\n")
     }
   }

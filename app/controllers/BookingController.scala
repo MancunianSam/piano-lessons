@@ -69,8 +69,8 @@ class BookingController @Inject()(
     }, contact => {
       if (lessonLength > 0) {
         bookingService.createPaidBooking(numOfLessons, lessonLength, date, time, contact).map(id => {
-          Redirect(routes.BookingController.bookingSummary(numOfLessons, lessonLength, date, time, id))
-        })
+            Redirect(routes.BookingController.bookingSummary(numOfLessons, lessonLength, date, time, id))
+          })
       } else {
         bookingService.createFreeBooking(1, date, time, contact).map(booking => {
           Ok(views.html.paymentConfirmation(booking))

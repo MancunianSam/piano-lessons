@@ -50,7 +50,7 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
   "BookingController book" should {
     val priceTable = Table(
       ("lessonLength", "expectedPrices"),
-      (30, Prices(15, 45, 80)),
+      (30, Prices(15, 45, 75)),
       (60, Prices(30, 90, 170)),
     )
     forAll(priceTable) { (lessonLength, prices) =>
@@ -78,7 +78,13 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
         val response = createController(container.mappedPort(5432))
           .calendar(1, 30, month, Option(year))
           .apply(FakeRequest(GET, "/calendar/"))
-        contentAsString(response) must include(monthName)
+        val calendar = Calendar.getInstance()
+        val thisMonth = calendar.get(Calendar.MONTH)
+        if(thisMonth > month.get) {
+          status(response) must equal(303)
+        } else {
+          contentAsString(response) must include(monthName)
+        }
       }
     }
 

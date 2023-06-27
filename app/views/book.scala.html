@@ -5,7 +5,7 @@
     <ul>
       @priceCard(1, s"£${prices.oneLesson / 100}", "")
       @priceCard(3, s"£${prices.threeLessons / 100}", "")
-      @priceCard(6, s"£${prices.sixLessons / 100}", "This includes a saving of £10")
+      @priceCard(6, s"£${prices.sixLessons / 100}", if(lessonLength == 30) "6 lessons for the price of 5" else "This includes a saving of £10" )
 
     </ul>
 
