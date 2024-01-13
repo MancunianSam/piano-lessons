@@ -24,12 +24,13 @@ jobs:
         uses: "codecov/codecov-action@v3"
         with:
           fail_ci_if_error: true
-      - name: Build typescript
+      - name: Build and push
         run: |
           npm --prefix ts ci
           npm --prefix ts run build
           mkdir public/javascripts
           cp ts/dist/payment.js public/javascripts/
           sbt dist 
+          aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 715102664058.dkr.ecr.eu-west-2.amazonaws.com
           docker build -t 715102664058.dkr.ecr.eu-west-2.amazonaws.com/piano-lessons .
           docker push 715102664058.dkr.ecr.eu-west-2.amazonaws.com/piano-lessons
