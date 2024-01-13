@@ -5,7 +5,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{GET, contentAsString, defaultAwaitTimeout, stubControllerComponents}
 import utils.PianoLessonsUtils
 
-class ContactControllerSpec extends PianoLessonsUtils{
+class ContactControllerSpec extends PianoLessonsUtils {
   "ContactController contact" should {
     "render the contact page" in {
       val configuration = Configuration.from(Map("contact.phone" -> "12345678"))

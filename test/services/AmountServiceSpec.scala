@@ -10,7 +10,7 @@ class AmountServiceSpec extends PlaySpec with TableDrivenPropertyChecks {
     ("lessonLength", "prices"),
     (0, Prices(0, 0, 0)),
     (30, Prices(1500, 4500, 7500)),
-    (60, Prices(3000, 9000, 17000)),
+    (60, Prices(3000, 9000, 17000))
   )
 
   "AmountService getPrices" should {

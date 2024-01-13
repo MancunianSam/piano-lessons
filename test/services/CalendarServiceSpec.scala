@@ -60,7 +60,7 @@ class CalendarServiceSpec extends PlaySpec with TableDrivenPropertyChecks with S
     forAll(bookedSlotsHourLesson) { (booked, available) =>
       s"return the available slots for booked slots ${booked.mkString(",")} for an hour lesson" in {
         val service = new CalendarService(testGoogleConfiguration(booked.map(t => s"${f"$t%02d"}:00"), 60))
-        val availableResponse = service.getAvailableSlots("2023-03-02",1, 60, 18)
+        val availableResponse = service.getAvailableSlots("2023-03-02", 1, 60, 18)
         availableResponse must be(available.map(i => s"${f"$i%02d"}:00"))
       }
     }
@@ -86,9 +86,9 @@ class CalendarServiceSpec extends PlaySpec with TableDrivenPropertyChecks with S
       val service = new CalendarService(testGoogleConfiguration(Nil, 30))
       val contact = Contact("test@test.com", "name", None, None, "phone", Option("notes"))
       val event = service.putEvent(startDate, endDate, contact)
-      event.getStart.getTime().get.getHour must be (8)
-      event.getEnd.getTime().get.getHour must be (9)
-      event.getDescription must be ("\nEmail: test@test.com\nName: name\nStudent Name: \nLevel: \nPhone: phone\nNotes: notes\n")
+      event.getStart.getTime().get.getHour must be(9)
+      event.getEnd.getTime().get.getHour must be(10)
+      event.getDescription must be("\nEmail: test@test.com\nName: name\nStudent Name: \nLevel: \nPhone: phone\nNotes: notes\n")
     }
   }
 }

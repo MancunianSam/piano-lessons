@@ -16,7 +16,8 @@ import scala.jdk.CollectionConverters._
 class GoogleService extends GoogleConfiguration {
   private val transport: NetHttpTransport = GoogleNetHttpTransport.newTrustedTransport()
   private val jsonFactory = GsonFactory.getDefaultInstance
-  val credentials: GoogleCredentials = GoogleCredentials.getApplicationDefault()
+  val credentials: GoogleCredentials = GoogleCredentials
+    .getApplicationDefault()
     .createScoped(CalendarScopes.CALENDAR_EVENTS, CalendarScopes.CALENDAR)
 
   def calendarListItems: List[CalendarListEntry] = {
@@ -24,11 +25,15 @@ class GoogleService extends GoogleConfiguration {
   }
 
   def listEvents(calendarId: String, startTime: DateTime, endTime: DateTime): List[Event] = {
-    calendarApi.events().list(calendarId)
+    calendarApi
+      .events()
+      .list(calendarId)
       .setTimeMin(startTime)
       .setTimeMax(endTime)
       .execute()
-      .getItems.asScala.toList
+      .getItems
+      .asScala
+      .toList
   }
 
   def addEvent(calendarId: String, event: Event): Event =

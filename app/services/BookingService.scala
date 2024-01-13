@@ -13,12 +13,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-class BookingService @Inject()(val studentRepository: StudentRepository,
-                               val timesRepository: TimesRepository,
-                               val amountService: AmountService,
-                               val calendarService: CalendarService,
-                               val emailService: EmailService,
-                               val stripeConfiguration: StripeConfiguration)(implicit executionContext: ExecutionContext) {
+class BookingService @Inject() (
+    val studentRepository: StudentRepository,
+    val timesRepository: TimesRepository,
+    val amountService: AmountService,
+    val calendarService: CalendarService,
+    val emailService: EmailService,
+    val stripeConfiguration: StripeConfiguration
+)(implicit executionContext: ExecutionContext) {
 
   def createBooking(numOfLessons: Int, lengthOfLesson: Int, date: String, time: String, studentId: UUID, cost: Int): Future[Booking] = {
 
@@ -26,10 +28,12 @@ class BookingService @Inject()(val studentRepository: StudentRepository,
       val localDateTime = LocalDateTime.parse(s"${date}T$time:00").plusWeeks(plusWeeks)
       localDateTime.format(formattedPattern)
     })
-    studentRepository.getStudent(studentId).map(student => {
-      val email = student.head.email
-      Booking(studentId, email, numOfLessons, lengthOfLesson, dates, cost)
-    })
+    studentRepository
+      .getStudent(studentId)
+      .map(student => {
+        val email = student.head.email
+        Booking(studentId, email, numOfLessons, lengthOfLesson, dates, cost)
+      })
   }
 
   def createFreeBooking(numOfLessons: Int, date: String, time: String, contact: Contact): Future[Booking] = {
@@ -72,11 +76,25 @@ class BookingService @Inject()(val studentRepository: StudentRepository,
       time <- times.headOption
       totalCost <- student.totalCost
     } yield {
-      val dates = times.map(_.startDate.toLocalDateTime).
-        sorted.zipWithIndex.map { case (date, idx) =>
-        OrderDates(idx + 1, date.format(formattedPattern))
-      }.toList
-      Order(student.name, student.student, student.email, student.phone, "Thank you for your order!", s"${time.lengthOfLessons} minutes", time.numberOfLessons, totalCost.toInt / 100, dates)
+      val dates = times
+        .map(_.startDate.toLocalDateTime)
+        .sorted
+        .zipWithIndex
+        .map { case (date, idx) =>
+          OrderDates(idx + 1, date.format(formattedPattern))
+        }
+        .toList
+      Order(
+        student.name,
+        student.student,
+        student.email,
+        student.phone,
+        "Thank you for your order!",
+        s"${time.lengthOfLessons} minutes",
+        time.numberOfLessons,
+        totalCost.toInt / 100,
+        dates
+      )
     }
   }
 }

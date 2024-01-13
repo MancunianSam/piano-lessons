@@ -47,7 +47,17 @@ class BookingServiceSpec extends PlaySpec with TableDrivenPropertyChecks with Sc
     ("numberOfLessons", "expectedDates"),
     (1, List("Thursday 30 March 2023 09 00")),
     (3, List("Thursday 30 March 2023 09 00", "Thursday 6 April 2023 09 00", "Thursday 13 April 2023 09 00")),
-    (6, List("Thursday 30 March 2023 09 00", "Thursday 6 April 2023 09 00", "Thursday 13 April 2023 09 00", "Thursday 20 April 2023 09 00", "Thursday 27 April 2023 09 00", "Thursday 4 May 2023 09 00")),
+    (
+      6,
+      List(
+        "Thursday 30 March 2023 09 00",
+        "Thursday 6 April 2023 09 00",
+        "Thursday 13 April 2023 09 00",
+        "Thursday 20 April 2023 09 00",
+        "Thursday 27 April 2023 09 00",
+        "Thursday 4 May 2023 09 00"
+      )
+    )
   )
 
   "BookingService createBooking" should {

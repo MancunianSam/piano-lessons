@@ -10,8 +10,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-class StudentRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class StudentRepository @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
 
   private val insertQuery = Student returning Student.map(_.id) into
@@ -19,7 +18,18 @@ class StudentRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
 
   def addStudent(contact: Contact, totalCost: Long, paymentIntendId: Option[String] = None, chargeCompleted: Boolean = false): Future[StudentRow] = {
 
-    val insert = insertQuery += StudentRow(UUID.randomUUID(), contact.email, contact.name, contact.student, contact.level, contact.phone, contact.notes, paymentIntendId, Option(totalCost), Option(chargeCompleted))
+    val insert = insertQuery += StudentRow(
+      UUID.randomUUID(),
+      contact.email,
+      contact.name,
+      contact.student,
+      contact.level,
+      contact.phone,
+      contact.notes,
+      paymentIntendId,
+      Option(totalCost),
+      Option(chargeCompleted)
+    )
     db.run(insert)
   }
 
@@ -34,7 +44,8 @@ class StudentRepository @Inject()(protected val dbConfigProvider: DatabaseConfig
   }
 
   def updateChargeCompleted(paymentIntentId: String): Future[Int] = {
-    val update = Student.filter(_.paymentIntentId === Option(paymentIntentId))
+    val update = Student
+      .filter(_.paymentIntentId === Option(paymentIntentId))
       .map(_.paymentConfirmed)
       .update(Option(true))
     db.run(update)

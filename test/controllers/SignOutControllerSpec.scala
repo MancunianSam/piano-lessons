@@ -9,7 +9,7 @@ class SignOutControllerSpec extends PianoLessonsUtils {
     "render the sign out page" in {
       val controller = new SignOutController(stubControllerComponents())
       val response = controller.signedOut()(FakeRequest(GET, "/signed-out"))
-      contentAsString(response) must include ("You have signed out")
+      contentAsString(response) must include("You have signed out")
     }
   }
 }

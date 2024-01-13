@@ -10,7 +10,7 @@ import scala.annotation.unused
 class ThirdPartyModule(environment: Environment, @unused configuration: Configuration) extends AbstractModule {
 
   override def configure(): Unit = {
-    if(environment.mode == Mode.Prod) {
+    if (environment.mode == Mode.Prod) {
       bind(classOf[GoogleConfiguration]).to(classOf[GoogleService])
       bind(classOf[StripeConfiguration]).to(classOf[StripeService])
     } else {

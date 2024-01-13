@@ -38,7 +38,7 @@
         @if(day.isEmpty) {
           <span class="missing-day"></span>
         } else {
-          <a href="@routes.BookingController.times(numberOfLessons, lessonLength, s"2023-${f"${month + 1}%02d"}-${f"${day.toInt}%02d"}")" class="btn">@day</a>
+          <a href="@routes.BookingController.times(numberOfLessons, lessonLength, s"2024-${f"${month + 1}%02d"}-${f"${day.toInt}%02d"}")" class="btn">@day</a>
         }
 
       }

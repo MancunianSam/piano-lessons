@@ -32,15 +32,14 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
     sendGridServer.stop()
   }
 
-
   val testGoogleService = new LocalGoogleService()
   val testStripeConfiguration = new LocalStripeService()
-
 
   "BookingController chooseLength" should {
     "render the choose lesson length page" in withContainers { container: PostgreSQLContainer =>
       val response = createController(container.mappedPort(5432))
-        .chooseLength().apply(FakeRequest(GET, "/choose-length"))
+        .chooseLength()
+        .apply(FakeRequest(GET, "/choose-length"))
       contentAsString(response) must include("30 MINUTE LESSON")
       contentAsString(response) must include("60 MINUTE LESSON")
       contentAsString(response) must include("FREE TRIAL LESSON")
@@ -51,12 +50,13 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
     val priceTable = Table(
       ("lessonLength", "expectedPrices"),
       (30, Prices(15, 45, 75)),
-      (60, Prices(30, 90, 170)),
+      (60, Prices(30, 90, 170))
     )
     forAll(priceTable) { (lessonLength, prices) =>
       s"render the correct prices on the booking page for a $lessonLength minute lesson" in withContainers { container: PostgreSQLContainer =>
         val response = createController(container.mappedPort(5432))
-          .book(lessonLength).apply(FakeRequest(GET, s"/book/$lessonLength"))
+          .book(lessonLength)
+          .apply(FakeRequest(GET, s"/book/$lessonLength"))
         contentAsString(response) must include(s"£${prices.oneLesson}")
         contentAsString(response) must include(s"£${prices.threeLessons}")
         contentAsString(response) must include(s"£${prices.sixLessons}")
@@ -69,7 +69,7 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
       ("month", "monthName"),
       (Option(2), "March"),
       (Option(5), "June"),
-      (Option(8), "September"),
+      (Option(8), "September")
     )
 
     forAll(monthTable) { (month, monthName) =>
@@ -80,7 +80,7 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
           .apply(FakeRequest(GET, "/calendar/"))
         val calendar = Calendar.getInstance()
         val thisMonth = calendar.get(Calendar.MONTH)
-        if(thisMonth > month.get) {
+        if (thisMonth > month.get) {
           status(response) must equal(303)
         } else {
           contentAsString(response) must include(monthName)
@@ -116,8 +116,7 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
       val response = createController(container.mappedPort(5432))
         .bookingContactDetails(numOfLessons, lessonLength, date, time)
         .apply(
-          FakeRequest(GET, s"/booking-contact/$numOfLessons/$lessonLength/$date/$time")
-            .withCSRFToken
+          FakeRequest(GET, s"/booking-contact/$numOfLessons/$lessonLength/$date/$time").withCSRFToken
         )
       val content = contentAsString(response)
       content must include("email")
@@ -182,6 +181,17 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
       val content = contentAsString(response)
       content must include("09:00")
     }
+
+    "render the times page with no available slots on a saturday" in withContainers { container: PostgreSQLContainer =>
+      val numOfLessons = 1
+      val lessonLength = 30
+      val date = "2024-01-13"
+      val response = createController(container.mappedPort(5432))
+        .times(numOfLessons, lessonLength, date)
+        .apply(FakeRequest(GET, s"/times/$numOfLessons/$lessonLength/$date"))
+      val content = contentAsString(response)
+      content must include("There are no times available for this date.")
+    }
   }
 
   "BookingController bookingSummary" should {
@@ -196,8 +206,7 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
       val response = createController(container.mappedPort(5432))
         .bookingSummary(numOfLessons, lessonLength, date, time, id)
         .apply(
-          FakeRequest(GET, s"/booking-summary/$numOfLessons/$lessonLength/$date/$time/$id")
-            .withCSRFToken
+          FakeRequest(GET, s"/booking-summary/$numOfLessons/$lessonLength/$date/$time/$id").withCSRFToken
         )
       val content = contentAsString(response)
       content must include("payment-form")

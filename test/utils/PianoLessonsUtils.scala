@@ -39,7 +39,6 @@ import scala.reflect.ClassTag
 
 trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutures with BeforeAndAfterAll {
 
-
   private def securityComponents(testConfig: Config, playCacheSessionStore: SessionStore): SecurityComponents = new SecurityComponents {
     override def components: ControllerComponents = stubMessagesControllerComponents()
 
@@ -133,12 +132,12 @@ trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutu
     securityComponents(testConfig, playCacheSessionStore)
   }
 
-
   def createDbConfigProvider(port: Int): DatabaseConfigProvider = {
     new DatabaseConfigProvider {
       override def get[P <: BasicProfile]: DatabaseConfig[P] = {
         val cls: ClassTag[P] = ClassTag[P](classOf[JdbcProfile])
-        val config = ConfigFactory.parseMap(Map("slick.dbs.default.db.url" -> s"jdbc:postgresql://localhost:$port/piano-lessons").asJava)
+        val config = ConfigFactory
+          .parseMap(Map("slick.dbs.default.db.url" -> s"jdbc:postgresql://localhost:$port/piano-lessons").asJava)
           .withFallback(ConfigFactory.load())
         DatabaseConfig.forConfig("slick.dbs.default", config)(cls)
 
@@ -191,4 +190,3 @@ trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutu
   }
 
 }
-

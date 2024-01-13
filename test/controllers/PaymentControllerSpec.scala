@@ -33,7 +33,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.jdk.CollectionConverters.ListHasAsScala
 
-class PaymentControllerSpec extends PianoLessonsUtils with TestContainersUtils  {
+class PaymentControllerSpec extends PianoLessonsUtils with TestContainersUtils {
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = scaled(Span(50, Seconds)), interval = scaled(Span(100, Millis)))
   val stripeConfiguration: StripeConfiguration = new StripeConfiguration {
     private def intent(secret: String) = {
@@ -140,7 +140,8 @@ class PaymentControllerSpec extends PianoLessonsUtils with TestContainersUtils  
       verify(calendarService, times(1)).putEvent(any[Timestamp], any[Timestamp], any[Contact])
 
       val serveEvents = sendGridServer.getAllServeEvents.asScala
-      def getToAddress(serveEvent: ServeEvent): String = decode[Email](serveEvent.getRequest.getBodyAsString).toOption.get.personalizations.headOption.flatMap(_.to.headOption).get.email
+      def getToAddress(serveEvent: ServeEvent): String =
+        decode[Email](serveEvent.getRequest.getBodyAsString).toOption.get.personalizations.headOption.flatMap(_.to.headOption).get.email
 
       getToAddress(serveEvents.head) must equal("bookings@clairepalmerpiano.co.uk")
       getToAddress(serveEvents.last) must equal("test@test.com")

@@ -13,7 +13,6 @@ export AUTH_CLIENT_ID={OIDC_CLIENT_ID};
 export SENDGRID_API_KEY={SENDGRID_API_KEY};
 export AUTH_SECRET={OIDC_CLIENT_SECRET};
 export BASE_URL=http://localhost:9000;
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-credentials
 
 sbt run
 ```

@@ -12,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import sttp.client3._
 import sttp.client3.asynchttpclient.future.AsyncHttpClientFutureBackend
 
-class EmailService @Inject()(configuration: Configuration)(implicit val executionContext: ExecutionContext) {
+class EmailService @Inject() (configuration: Configuration)(implicit val executionContext: ExecutionContext) {
   private val backend: SttpBackend[Future, Any] = AsyncHttpClientFutureBackend()
 
   def sendOrderEmail(emailAddress: String, order: Option[Order]): Future[Int] = {
@@ -37,7 +37,17 @@ class EmailService @Inject()(configuration: Configuration)(implicit val executio
 object EmailService {
   case class OrderDates(number: Int, date: String)
   case class OrderSummary(order: Order)
-  case class Order(name: String, studentName: Option[String], email: String, phone: String, title: String, lengthOfLessons: String, numberOfLessons: Int, totalCost: Int, dates: List[OrderDates])
+  case class Order(
+      name: String,
+      studentName: Option[String],
+      email: String,
+      phone: String,
+      title: String,
+      lengthOfLessons: String,
+      numberOfLessons: Int,
+      totalCost: Int,
+      dates: List[OrderDates]
+  )
   case class EmailRecipient(email: String)
   case class Personalisation(to: List[EmailRecipient], dynamic_template_data: OrderSummary)
   case class Email(personalizations: List[Personalisation], from: EmailRecipient, template_id: String)

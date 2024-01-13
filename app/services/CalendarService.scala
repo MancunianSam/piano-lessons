@@ -15,7 +15,7 @@ import java.util.{Date, TimeZone}
 import scala.annotation.tailrec
 import scala.concurrent.Future
 
-class CalendarService @Inject()(googleConfiguration: GoogleConfiguration) {
+class CalendarService @Inject() (googleConfiguration: GoogleConfiguration) {
 
   private val startOfDay = 9
 
@@ -24,27 +24,33 @@ class CalendarService @Inject()(googleConfiguration: GoogleConfiguration) {
   }
 
   @tailrec
-  private def getAllTimesForDay(increment: Int, allTimes: List[EventRange], endOfDay: Int): List[EventRange] = {
+  private def getAllTimesForDay(increment: Int, allTimes: List[EventRange], endOfDay: Int, dayOfWeek: String): List[EventRange] = {
     val currentTime = allTimes.head.end
-    if (currentTime.getHour == endOfDay) {
+    if (dayOfWeek == "SATURDAY") {
+      Nil
+    } else if (currentTime.getHour == endOfDay) {
       allTimes
     } else {
-      getAllTimesForDay(increment, EventRange(currentTime, currentTime.plusMinutes(increment)) :: allTimes, endOfDay)
+      getAllTimesForDay(increment, EventRange(currentTime, currentTime.plusMinutes(increment)) :: allTimes, endOfDay, dayOfWeek)
     }
   }
 
   def getAvailableSlots(date: String, numberOfLessons: Int, lengthOfLesson: Int, endOfDay: Int): List[String] = {
+    val dayOfWeek = LocalDate.parse(date).getDayOfWeek.name()
     val startTime = LocalTime.of(startOfDay, 0)
     val firstRange = EventRange(startTime, startTime.plusMinutes(lengthOfLesson))
-    val allTimes = getAllTimesForDay(lengthOfLesson, firstRange :: Nil, endOfDay)
-    val allLessonTimes = (0 until numberOfLessons).toList.map((plusWeeks: Int) => {
-      val now = LocalDate.parse(date).plusWeeks(plusWeeks)
-      now -> allTimes
-    }).toMap
+    val allTimes = getAllTimesForDay(lengthOfLesson, firstRange :: Nil, endOfDay, dayOfWeek)
+    val allLessonTimes = (0 until numberOfLessons).toList
+      .map((plusWeeks: Int) => {
+        val now = LocalDate.parse(date).plusWeeks(plusWeeks)
+        now -> allTimes
+      })
+      .toMap
     val timesWithNoEvent = allLessonTimes.map { case (date, times) =>
       val start = new DateTime(Date.from(date.atStartOfDay().toInstant(ZoneOffset.UTC)))
       val end = new DateTime(Date.from(date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)))
-      val allEvents = googleConfiguration.listEvents(calendarId, start, end)
+      val allEvents = googleConfiguration
+        .listEvents(calendarId, start, end)
         .flatMap(ev => {
           for {
             start <- ev.getStart.getTime()

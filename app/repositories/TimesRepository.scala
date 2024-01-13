@@ -14,8 +14,7 @@ import java.util.UUID
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
-class TimesRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+class TimesRepository @Inject() (protected val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   import profile.api._
 
@@ -33,7 +32,9 @@ class TimesRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   }
 
   def getTimes(paymentIntentId: String): Future[Seq[(TimesRow, StudentRow)]] = {
-    val query = Times.join(Student).on(_.studentId === _.id)
+    val query = Times
+      .join(Student)
+      .on(_.studentId === _.id)
       .filter(_._2.paymentIntentId === Option(paymentIntentId))
     db.run(query.result)
   }
