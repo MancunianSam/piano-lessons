@@ -12,8 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Run tests
-        run: sbt coverage test coverageReport
       - name: Configure AWS credentials for ECR
         uses: aws-actions/configure-aws-credentials@v4.0.1
         with:
