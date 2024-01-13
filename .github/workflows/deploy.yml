@@ -31,5 +31,5 @@ jobs:
           mkdir public/javascripts
           cp ts/dist/payment.js public/javascripts/
           sbt dist 
-          docker build -t 715102664058.dkr.ecr.eu-west-2.amazonaws.com/piano-lessons
+          docker build -t 715102664058.dkr.ecr.eu-west-2.amazonaws.com/piano-lessons .
           docker push 715102664058.dkr.ecr.eu-west-2.amazonaws.com/piano-lessons
