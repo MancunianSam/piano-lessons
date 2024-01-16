@@ -12,7 +12,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-typescript": "^11.0.0",
+    "@rollup/plugin-typescript": "^11.1.6",
     "@stripe/stripe-js": "^1.48.0",
     "@types/jest": "^29.4.0",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
