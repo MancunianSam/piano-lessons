@@ -1,0 +1,15 @@
+@import services.NewsService.News
+@(news: Seq[News])
+@main("News") {
+  <section class="cards">
+    <ul class="news-list">
+  @for(item <- news) {
+    <li class="cards">
+      <h2>@item.date</h2>
+      <h2>@item.title</h2>
+      <p class="body-text">@Html(item.body)</p>
+    </li>
+  }
+    </ul>
+  </section>
+}

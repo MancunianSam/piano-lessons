@@ -104,6 +104,15 @@ body {
     list-style: none;
 }
 
+textarea.body {
+    width: 20rem;
+    height: 20rem;
+}
+
+.news-list {
+    grid-template-columns: none !important;
+}
+
 .cards > ul > li {
     border: 1px solid #E2E2E2;
     border-radius: .5rem;

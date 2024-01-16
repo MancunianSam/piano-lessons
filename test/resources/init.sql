@@ -25,3 +25,12 @@ CREATE TABLE times
     constraint times_pk primary key (id),
     constraint times_student foreign key (student_id) references student (id)
 );
+
+CREATE TABLE news
+(
+    id    uuid         not null,
+    date  date         not null default now(),
+    title varchar(255) not null,
+    body  text         not null,
+    constraint news_pk primary key (id)
+);

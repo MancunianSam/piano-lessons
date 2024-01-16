@@ -1,20 +1,17 @@
 package utils
 
-import akka.stream.ActorMaterializer
-import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata
 import com.typesafe.config.ConfigFactory
+import controllers.NewsController.NewsForm
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{doAnswer, doNothing, doReturn}
+import org.mockito.Mockito.{doAnswer, doReturn}
 import org.pac4j.core.client.Clients
 import org.pac4j.core.config.Config
 import org.pac4j.core.context.session.SessionStore
 import org.pac4j.core.engine.DefaultSecurityLogic
 import org.pac4j.core.http.ajax.AjaxRequestResolver
 import org.pac4j.core.util.Pac4jConstants
-import org.pac4j.oidc.client.OidcClient
-import org.pac4j.oidc.config.OidcConfiguration
-import org.pac4j.oidc.profile.{OidcProfile, OidcProfileDefinition}
-import org.pac4j.oidc.redirect.OidcRedirectionActionBuilder
+import org.pac4j.oauth.client.Google2Client
+import org.pac4j.oauth.profile.google2.Google2Profile
 import org.pac4j.play.PlayWebContext
 import org.pac4j.play.http.PlayHttpActionAdapter
 import org.pac4j.play.scala.SecurityComponents
@@ -24,16 +21,16 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Play.materializer
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc.{BodyParsers, ControllerComponents}
 import play.api.test.Helpers.stubMessagesControllerComponents
 import slick.basic.{BasicProfile, DatabaseConfig}
 import slick.jdbc.JdbcProfile
-import play.api.Play.materializer
-import java.net.URI
+
 import java.sql._
-import java.time.{Instant, LocalDateTime, ZoneOffset}
-import java.util.{Date, Properties, UUID}
+import java.time.{Instant, LocalDate}
+import java.util.{Properties, UUID}
 import scala.jdk.CollectionConverters.MapHasAsJava
 import scala.reflect.ClassTag
 
@@ -60,27 +57,14 @@ trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutu
 
     // There is a check to see whether an OidcClient exists. The name matters and must match the string passed to Secure in the controller.
     val clients = new Clients()
-    val configuration = mock[OidcConfiguration]
-
-    // Mock the init method to stop it calling out to the keycloak server
-    doNothing().when(configuration).init()
-
-    // Set some configuration parameters
-    doReturn("id").when(configuration).getClientId
-    doReturn("code").when(configuration).getResponseType
-    doReturn(true).when(configuration).isUseNonce
-    val providerMetadata = mock[OIDCProviderMetadata]
-    doReturn(URI.create("/auth/realms/id/protocol/openid-connect/auth")).when(providerMetadata).getAuthorizationEndpointURI
-    doReturn(providerMetadata).when(configuration).getProviderMetadata
 
     val resolver = mock[AjaxRequestResolver]
     doReturn(false).when(resolver).isAjax(any[PlayWebContext], any[SessionStore])
 
     // Create a concrete client
-    val client = new OidcClient(configuration)
-    client.setName("OidcClient")
+    val client = new Google2Client("id", "secret")
+    client.setName("Google2Client")
     client.setAjaxRequestResolver(resolver)
-    client.setRedirectionActionBuilder(new OidcRedirectionActionBuilder(client))
     client.setCallbackUrl("test")
 
     clients.setClients(client)
@@ -90,19 +74,13 @@ trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutu
   }
 
   def authorisedSecurityComponents: SecurityComponents = {
-    // Pac4j checks the session to see if there any profiles stored there. If there are, the request is authenticated.
+    val profile: Google2Profile = new Google2Profile()
 
-    // Create the profile and add to the map
-    val profile: OidcProfile = new OidcProfile()
-
-    profile.addAttribute(OidcProfileDefinition.EXPIRATION, Date.from(LocalDateTime.now().plusDays(10).toInstant(ZoneOffset.UTC)))
-
-    val profileMap: java.util.LinkedHashMap[String, OidcProfile] = new java.util.LinkedHashMap[String, OidcProfile]
+    val profileMap: java.util.LinkedHashMap[String, Google2Profile] = new java.util.LinkedHashMap[String, Google2Profile]
     profileMap.put("OidcClient", profile)
 
     val playCacheSessionStore: SessionStore = mock[PlayCacheSessionStore]
 
-    // Mock the get method to return the expected map.
     doAnswer(_ => java.util.Optional.of(profileMap))
       .when(playCacheSessionStore)
       .get(
@@ -112,23 +90,17 @@ trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutu
 
     val testConfig = new Config()
 
-    // Return true on the isAuthorized method
     val logic = DefaultSecurityLogic.INSTANCE
     logic.setAuthorizationChecker((_, _, _, _, _, _) => true)
     testConfig.setSecurityLogic(logic)
 
-    // There is a null check for the action adaptor.
     testConfig.setHttpActionAdapter(new PlayHttpActionAdapter())
 
-    // There is a check to see whether an OidcClient exists. The name matters and must match the string passed to Secure in the controller.
     val clients = new Clients()
-    val configuration = mock[OidcConfiguration]
-    doNothing().when(configuration).init()
 
-    clients.setClients(new OidcClient(configuration))
+    clients.setClients(new Google2Client())
     testConfig.setClients(clients)
 
-    // Create a new controller with the session store and config. The parser and components don't affect the tests.
     securityComponents(testConfig, playCacheSessionStore)
   }
 
@@ -152,6 +124,16 @@ trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutu
     DriverManager.getConnection(url, properties)
   }
 
+  def createNews(connection: Connection, title: String, body: String, date: LocalDate): Int = {
+    val sql = "INSERT INTO news (id, date, title, body) VALUES (?, ?, ?, ?)"
+    val ps: PreparedStatement = connection.prepareStatement(sql)
+    ps.setObject(1, UUID.randomUUID(), Types.OTHER)
+    ps.setDate(2, java.sql.Date.valueOf(date))
+    ps.setString(3, title)
+    ps.setString(4, body)
+    ps.executeUpdate()
+  }
+
   def createTimes(connection: Connection, studentId: UUID): Int = {
     val sql = "INSERT INTO times (id, number_of_lessons, length_of_lessons, start_date, end_date, student_id) VALUES (?, ?, ?, ?, ?, ?)"
     val ps: PreparedStatement = connection.prepareStatement(sql)
@@ -162,6 +144,16 @@ trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutu
     ps.setTimestamp(5, Timestamp.from(Instant.now()))
     ps.setObject(6, studentId, Types.OTHER)
     ps.executeUpdate()
+  }
+
+  def getNews(connection: Connection): NewsForm = {
+    val sql = "SELECT title, body FROM news"
+    val ps: PreparedStatement = connection.prepareStatement(sql)
+    val rs = ps.executeQuery()
+    rs.next()
+    val title = rs.getString(1)
+    val body = rs.getString(2)
+    NewsForm(title, body)
   }
 
   def getPaymentConfirmation(connection: Connection, id: UUID): Boolean = {

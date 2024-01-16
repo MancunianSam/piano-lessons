@@ -1,9 +1,11 @@
 package repositories
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
-object Tables extends Tables {
-  val profile = slick.jdbc.PostgresProfile
-}
+object Tables
+    extends {
+      val profile = slick.jdbc.PostgresProfile
+    }
+    with Tables
 
 /** Slick data model trait for extension, choice of backend or usage in the cake pattern. (Make sure to initialize this late.) */
 trait Tables {
@@ -14,9 +16,53 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Student.schema ++ Times.schema
+  lazy val schema: profile.SchemaDescription = News.schema ++ Student.schema ++ Times.schema
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
+
+  /** Entity class storing rows of table News
+    * @param id
+    *   Database column id SqlType(uuid), PrimaryKey
+    * @param date
+    *   Database column date SqlType(date)
+    * @param title
+    *   Database column title SqlType(varchar), Length(255,true)
+    * @param body
+    *   Database column body SqlType(text)
+    */
+  case class NewsRow(id: java.util.UUID, date: java.sql.Date, title: String, body: String)
+
+  /** GetResult implicit for fetching NewsRow objects using plain SQL queries */
+  implicit def GetResultNewsRow(implicit e0: GR[java.util.UUID], e1: GR[java.sql.Date], e2: GR[String]): GR[NewsRow] = GR { prs =>
+    import prs._
+    NewsRow.tupled((<<[java.util.UUID], <<[java.sql.Date], <<[String], <<[String]))
+  }
+
+  /** Table description of table news. Objects of this class serve as prototypes for rows in queries. */
+  class News(_tableTag: Tag) extends profile.api.Table[NewsRow](_tableTag, "news") {
+    def * = (id, date, title, body) <> (NewsRow.tupled, NewsRow.unapply)
+
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = ((Rep.Some(id), Rep.Some(date), Rep.Some(title), Rep.Some(body))).shaped.<>(
+      { r => import r._; _1.map(_ => NewsRow.tupled((_1.get, _2.get, _3.get, _4.get))) },
+      (_: Any) => throw new Exception("Inserting into ? projection not supported.")
+    )
+
+    /** Database column id SqlType(uuid), PrimaryKey */
+    val id: Rep[java.util.UUID] = column[java.util.UUID]("id", O.PrimaryKey)
+
+    /** Database column date SqlType(date) */
+    val date: Rep[java.sql.Date] = column[java.sql.Date]("date")
+
+    /** Database column title SqlType(varchar), Length(255,true) */
+    val title: Rep[String] = column[String]("title", O.Length(255, varying = true))
+
+    /** Database column body SqlType(text) */
+    val body: Rep[String] = column[String]("body")
+  }
+
+  /** Collection-like TableQuery object for table News */
+  lazy val News = new TableQuery(tag => new News(tag))
 
   /** Entity class storing rows of table Student
     * @param id
@@ -69,7 +115,7 @@ trait Tables {
 
   /** Table description of table student. Objects of this class serve as prototypes for rows in queries. */
   class Student(_tableTag: Tag) extends profile.api.Table[StudentRow](_tableTag, "student") {
-    def * = (id, email, name, student, level, phone, notes, paymentIntentId, totalCost, paymentConfirmed).<>(StudentRow.tupled, StudentRow.unapply)
+    def * = (id, email, name, student, level, phone, notes, paymentIntentId, totalCost, paymentConfirmed) <> (StudentRow.tupled, StudentRow.unapply)
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(id), Rep.Some(email), Rep.Some(name), student, level, Rep.Some(phone), notes, paymentIntentId, totalCost, paymentConfirmed)).shaped.<>(
@@ -142,7 +188,7 @@ trait Tables {
 
   /** Table description of table times. Objects of this class serve as prototypes for rows in queries. */
   class Times(_tableTag: Tag) extends profile.api.Table[TimesRow](_tableTag, "times") {
-    def * = (id, numberOfLessons, lengthOfLessons, startDate, endDate, studentId).<>(TimesRow.tupled, TimesRow.unapply)
+    def * = (id, numberOfLessons, lengthOfLessons, startDate, endDate, studentId) <> (TimesRow.tupled, TimesRow.unapply)
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(id), Rep.Some(numberOfLessons), Rep.Some(lengthOfLessons), Rep.Some(startDate), Rep.Some(endDate), studentId)).shaped.<>(

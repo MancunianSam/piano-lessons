@@ -34,3 +34,4 @@ jobs:
           aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 715102664058.dkr.ecr.eu-west-2.amazonaws.com
           docker build -t 715102664058.dkr.ecr.eu-west-2.amazonaws.com/piano-lessons .
           docker push 715102664058.dkr.ecr.eu-west-2.amazonaws.com/piano-lessons
+          aws ecs update-service --service piano-lessons-service --cluster piano-lessons --force-new-deployment
