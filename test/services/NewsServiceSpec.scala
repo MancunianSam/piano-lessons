@@ -27,7 +27,7 @@ class NewsServiceSpec extends PlaySpec with TableDrivenPropertyChecks with Mocki
     (date(3, 1), "3rd Jan 2024"),
     (date(13, 1), "13th Jan 2024"),
     (date(21, 1), "21st Jan 2024"),
-    (date(1, 3), "1st Mar 2024"),
+    (date(1, 3), "1st Mar 2024")
   )
 
   override def beforeEach(): Unit = {
@@ -76,6 +76,5 @@ class NewsServiceSpec extends PlaySpec with TableDrivenPropertyChecks with Mocki
       insertedValue.body must equal("body")
     }
   }
-
 
 }

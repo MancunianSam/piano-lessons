@@ -10,10 +10,10 @@ import java.util.{Locale, UUID}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class NewsService @Inject () (val newsRepository: NewsRepository) (implicit executionContext: ExecutionContext) {
+class NewsService @Inject() (val newsRepository: NewsRepository)(implicit executionContext: ExecutionContext) {
 
   private def getSuffix(day: Int): String = {
-    if(day >= 11 && day <= 14) {
+    if (day >= 11 && day <= 14) {
       "th"
     } else {
       day % 10 match {

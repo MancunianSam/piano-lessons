@@ -14,12 +14,12 @@ import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.OptionConverters.RichOptional
 
-class NewsController @Inject()(val newsService: NewsService, val controllerComponents: SecurityComponents)(implicit ec: ExecutionContext) extends OidcSecurity {
+class NewsController @Inject() (val newsService: NewsService, val controllerComponents: SecurityComponents)(implicit ec: ExecutionContext) extends OidcSecurity {
 
   private def newsForm: Form[NewsForm] = Form[NewsForm](
     mapping(
       "title" -> text.verifying("Please enter a title", a => a.nonEmpty),
-      "body" -> text.verifying("Please enter news", a => a.nonEmpty),
+      "body" -> text.verifying("Please enter news", a => a.nonEmpty)
     )(NewsForm.apply)(NewsForm.unapply)
   )
 
@@ -39,14 +39,16 @@ class NewsController @Inject()(val newsService: NewsService, val controllerCompo
   }
 
   def add(): Action[AnyContent] = Secure("Google2Client", "custom").async { implicit request: Request[AnyContent] =>
-    newsForm.bindFromRequest().fold(
-      errForm => Future.successful(BadRequest(views.html.newsAdd(errForm, pac4jToken))),
-      newsForm => {
-        newsService.addNews(newsForm.title, newsForm.body).map { _ =>
-          Redirect(routes.NewsController.index())
+    newsForm
+      .bindFromRequest()
+      .fold(
+        errForm => Future.successful(BadRequest(views.html.newsAdd(errForm, pac4jToken))),
+        newsForm => {
+          newsService.addNews(newsForm.title, newsForm.body).map { _ =>
+            Redirect(routes.NewsController.index())
+          }
         }
-      }
-    )
+      )
   }
 }
 
