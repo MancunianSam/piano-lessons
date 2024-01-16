@@ -1,0 +1,6 @@
+@import controllers.NewsController.NewsForm
+@(newsForm: Form[NewsForm], name: String)(implicit messagesProvider: MessagesProvider)
+<p class="error-text">
+    @newsForm(name).error.map(err => Messages(err.message)).getOrElse("")
+</p>
+

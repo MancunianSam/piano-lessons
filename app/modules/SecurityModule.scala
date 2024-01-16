@@ -1,23 +1,25 @@
 package modules
 
 import com.google.inject.{AbstractModule, Provides}
-import com.nimbusds.jose.JWSAlgorithm
-import com.nimbusds.oauth2.sdk.auth.ClientAuthenticationMethod
+import controllers.CustomAuthoriser
 import org.pac4j.core.client.Clients
 import org.pac4j.core.config.Config
 import org.pac4j.core.context.session.SessionStore
 import org.pac4j.core.engine.DefaultCallbackLogic
+import org.pac4j.core.matching.matcher.PathMatcher
 import org.pac4j.core.profile.CommonProfile
-import org.pac4j.oidc.client.OidcClient
-import org.pac4j.oidc.config.OidcConfiguration
+import org.pac4j.oauth.client.Google2Client.Google2Scope
 import org.pac4j.play.scala.{DefaultSecurityComponents, Pac4jScalaTemplateHelper, SecurityComponents}
 import org.pac4j.play.store.PlayCacheSessionStore
 import org.pac4j.play.{CallbackController, LogoutController}
 import play.api.{Configuration, Environment}
+import org.pac4j.oauth.client.{FacebookClient, Google2Client}
 
-class SecurityModule extends AbstractModule {
+class SecurityModule(environment: Environment, configuration: Configuration) extends AbstractModule {
+
+  private val baseUrl = configuration.getOptional[String]("base.url").get
+  private val callbackUrl = s"$baseUrl/callback"
   override def configure(): Unit = {
-    val configuration: Configuration = Configuration.load(Environment.simple())
     bind(classOf[SessionStore]).to(classOf[PlayCacheSessionStore])
 
     bind(classOf[SecurityComponents]).to(classOf[DefaultSecurityComponents])
@@ -41,30 +43,22 @@ class SecurityModule extends AbstractModule {
   }
 
   @Provides
-  def provideOidcClient: OidcClient = {
-    val oidcConfiguration = new OidcConfiguration()
-    val configuration = Configuration.load(Environment.simple())
-    oidcConfiguration.setClientId(configuration.get[String]("auth.id"))
-    val authUrl = configuration.get[String]("auth.url")
-    val callback = configuration.get[String]("auth.callback")
-    val secret = configuration.get[String]("auth.secret")
-    oidcConfiguration.setSecret(secret)
-    oidcConfiguration.setDiscoveryURI(s"$authUrl/.well-known/openid-configuration")
-    oidcConfiguration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-    oidcConfiguration.setPreferredJwsAlgorithm(JWSAlgorithm.RS256)
-    // Setting this causes pac4j to get a new access token using the refresh token when the original access token expires
-    oidcConfiguration.setExpireSessionWithToken(true)
-    val oidcClient = new OidcClient(oidcConfiguration)
-    oidcClient.setCallbackUrl(callback)
-    oidcClient
+  def provideGoogleClient: Google2Client = {
+    val googleId = configuration.getOptional[String]("google.id").get
+    val googleSecret = configuration.getOptional[String]("google.secret").get
+    val client = new Google2Client(googleId, googleSecret)
+    client.setCallbackUrl(callbackUrl)
+    client.setScope(Google2Scope.EMAIL)
+    client
   }
 
   @Provides
-  def provideConfig(oidcClient: OidcClient): Config = {
-    val clients = new Clients(oidcClient)
+  def provideConfig(google2Client: Google2Client): Config = {
+    val clients = new Clients(callbackUrl, google2Client)
     val config = new Config(clients)
     val callbackLogic = DefaultCallbackLogic.INSTANCE
     config.setCallbackLogic(callbackLogic)
+    config.addAuthorizer("custom", new CustomAuthoriser())
     config
   }
 }

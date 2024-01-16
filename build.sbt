@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
   "org.pac4j" %% "play-pac4j" % "11.1.0-PLAY2.8",
   "com.typesafe.slick" %% "slick-codegen" % "3.4.1",
   "org.pac4j" % "pac4j-http" % pac4jVersion exclude("com.fasterxml.jackson.core", "jackson-databind"),
-  "org.pac4j" % "pac4j-oidc" % pac4jVersion exclude("commons-io", "commons-io") exclude("com.fasterxml.jackson.core", "jackson-databind"),
+  "org.pac4j" % "pac4j-oauth" % pac4jVersion exclude("commons-io", "commons-io") exclude("com.fasterxml.jackson.core", "jackson-databind"),
   "ch.qos.logback" % "logback-classic" % "1.4.5",
   "com.stripe" % "stripe-java" % "22.11.0",
   "com.softwaremill.sttp.client3" %% "core" % "3.8.13",

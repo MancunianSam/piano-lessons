@@ -7,5 +7,5 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.AnyContent
 
 trait OidcSecurity extends Security[CommonProfile] with I18nSupport {
-  val secureAction: SecureAction[CommonProfile, AnyContent, AuthenticatedRequest] = Secure("OidcClient", authorizers = DefaultAuthorizers.NONE)
+  val secureAction: SecureAction[CommonProfile, AnyContent, AuthenticatedRequest] = Secure("Google2Client", authorizers = DefaultAuthorizers.NONE)
 }

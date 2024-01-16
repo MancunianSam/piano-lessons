@@ -1,0 +1,21 @@
+@import views.html.helper.CSRF
+@import controllers.NewsController.NewsForm
+@import views.html.helper.form
+@import views.html.partials.newsError
+@(newsForm: Form[NewsForm], csrfToken: String)(implicit requestHeader: RequestHeader, messages: MessagesProvider)
+@main("Add news") {
+    @form(routes.NewsController.add) {
+        <fieldset>
+            @CSRF.formField
+            <input type="hidden" name="pac4jCsrfToken" value="@csrfToken" />
+            <label for="title">Title<sup>*</sup></label>
+            <input type="text" id="title" name="title" class="@if(newsForm("title").error.isDefined) {err}">
+            @newsError(newsForm, "title")
+            <label for="body">News Text<sup>*</sup></label>
+            @newsError(newsForm, "body")
+            <textarea type="text" id="body" name="body" class="body @if(newsForm("body").error.isDefined) {err}"></textarea>
+            <button class="submit-button" type="submit" value="Continue">Add News</button>
+        </fieldset>
+    }
+}
+
