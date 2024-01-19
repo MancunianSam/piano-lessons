@@ -4,7 +4,7 @@ import play.api.mvc.{Action, AnyContent, MessagesBaseController, MessagesControl
 
 import javax.inject.Inject
 
-class PoliciesController @Inject()(val controllerComponents: MessagesControllerComponents) extends MessagesBaseController {
+class PoliciesController @Inject() (val controllerComponents: MessagesControllerComponents) extends MessagesBaseController {
 
   def index(): Action[AnyContent] = Action { implicit request: MessagesRequest[AnyContent] =>
     Ok(views.html.policies())
