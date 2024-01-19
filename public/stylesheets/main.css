@@ -501,5 +501,12 @@ fieldset {
     border: none;
     display: flex;
     flex-direction: column;
+}
 
+.wrapped {
+    overflow-wrap: anywhere;
+}
+
+.policy-text {
+    margin-left: 1em;
 }
