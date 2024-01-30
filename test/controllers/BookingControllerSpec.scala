@@ -49,8 +49,8 @@ class BookingControllerSpec extends PianoLessonsUtils with TableDrivenPropertyCh
   "BookingController book" should {
     val priceTable = Table(
       ("lessonLength", "expectedPrices"),
-      (30, Prices(15, 45, 75)),
-      (60, Prices(30, 90, 170))
+      (30, Prices(16, 48, 80)),
+      (60, Prices(32, 96, 182))
     )
     forAll(priceTable) { (lessonLength, prices) =>
       s"render the correct prices on the booking page for a $lessonLength minute lesson" in withContainers { container: PostgreSQLContainer =>
