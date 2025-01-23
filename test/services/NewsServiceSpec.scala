@@ -7,6 +7,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor2}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.Configuration
 import repositories.{NewsRepository, Tables}
 import repositories.Tables.NewsRow
 
@@ -34,6 +35,8 @@ class NewsServiceSpec extends PlaySpec with TableDrivenPropertyChecks with Mocki
     Mockito.reset(newsRepository)
   }
 
+  private val configuration: Configuration = Configuration.from(Map("cloudfront.domain" -> "example.com"))
+
   private def newsRow(body: String): NewsRow = newsRow(Date.valueOf(LocalDate.now())).copy(body = body)
   private def newsRow(date: Date): NewsRow = NewsRow(UUID.randomUUID(), date, "", "")
 
@@ -42,7 +45,7 @@ class NewsServiceSpec extends PlaySpec with TableDrivenPropertyChecks with Mocki
       s"return $expectedFormat for the provided date" in {
         when(newsRepository.getNews).thenReturn(Future(Seq(newsRow(date))))
 
-        val news = new NewsService(newsRepository).getNews.futureValue
+        val news = new NewsService(newsRepository, configuration).getNews.futureValue
         news.head.date must equal(expectedFormat)
       }
     }
@@ -51,13 +54,13 @@ class NewsServiceSpec extends PlaySpec with TableDrivenPropertyChecks with Mocki
       val dates = List(date(1, 1), date(5, 2), date(6, 2), date(31, 12))
       when(newsRepository.getNews).thenReturn(Future(dates.map(newsRow)))
 
-      val news = new NewsService(newsRepository).getNews.futureValue
+      val news = new NewsService(newsRepository, configuration).getNews.futureValue
       news.map(_.date) must equal(List("31st Dec 2024", "6th Feb 2024", "5th Feb 2024", "1st Jan 2024"))
     }
 
     "replace carriage return with <br>" in {
       when(newsRepository.getNews).thenReturn(Future(Seq(newsRow("Body \r with \r return"))))
-      val news = new NewsService(newsRepository).getNews.futureValue
+      val news = new NewsService(newsRepository, configuration).getNews.futureValue
 
       news.head.body must equal("Body <br> with <br> return")
     }
@@ -68,7 +71,7 @@ class NewsServiceSpec extends PlaySpec with TableDrivenPropertyChecks with Mocki
       val rowCaptor: ArgumentCaptor[NewsRow] = ArgumentCaptor.forClass(classOf[NewsRow])
       when(newsRepository.addNews(rowCaptor.capture())).thenReturn(Future(newsRow("")))
 
-      new NewsService(newsRepository).addNews("title", "body").futureValue
+      new NewsService(newsRepository, configuration).addNews("title", "body", None).futureValue
 
       val insertedValue = rowCaptor.getValue
       insertedValue.date.toLocalDate must equal(LocalDate.now())

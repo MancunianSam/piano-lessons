@@ -31,7 +31,8 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.4.5",
   "com.stripe" % "stripe-java" % "22.11.0",
   "com.softwaremill.sttp.client3" %% "core" % "3.8.13",
-  "com.softwaremill.sttp.client3" %% "async-http-client-backend-future" % "3.8.13"
+  "com.softwaremill.sttp.client3" %% "async-http-client-backend-future" % "3.8.13",
+  "software.amazon.awssdk" % "s3" % "2.26.7"
 ) ++ Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",

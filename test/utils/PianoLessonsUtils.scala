@@ -25,6 +25,7 @@ import play.api.Play.materializer
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.mvc.{BodyParsers, ControllerComponents}
 import play.api.test.Helpers.stubMessagesControllerComponents
+import services.NewsService.News
 import slick.basic.{BasicProfile, DatabaseConfig}
 import slick.jdbc.JdbcProfile
 
@@ -146,14 +147,15 @@ trait PianoLessonsUtils extends PlaySpec with GuiceOneAppPerSuite with ScalaFutu
     ps.executeUpdate()
   }
 
-  def getNews(connection: Connection): NewsForm = {
-    val sql = "SELECT title, body FROM news"
+  def getNews(connection: Connection): News = {
+    val sql = "SELECT title, body, image FROM news"
     val ps: PreparedStatement = connection.prepareStatement(sql)
     val rs = ps.executeQuery()
     rs.next()
     val title = rs.getString(1)
     val body = rs.getString(2)
-    NewsForm(title, body)
+    val image = Option(rs.getString(3))
+    News("", title, body, image)
   }
 
   def getPaymentConfirmation(connection: Connection, id: UUID): Boolean = {

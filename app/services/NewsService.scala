@@ -1,8 +1,10 @@
 package services
 
+import play.api.Configuration
 import repositories.Tables.NewsRow
 import repositories.{NewsRepository, Tables}
 import services.NewsService.News
+
 import java.sql.Date
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -10,7 +12,7 @@ import java.util.{Locale, UUID}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class NewsService @Inject() (val newsRepository: NewsRepository)(implicit executionContext: ExecutionContext) {
+class NewsService @Inject() (val newsRepository: NewsRepository, configuration: Configuration)(implicit executionContext: ExecutionContext) {
 
   private def getSuffix(day: Int): String = {
     if (day >= 11 && day <= 14) {
@@ -28,12 +30,13 @@ class NewsService @Inject() (val newsRepository: NewsRepository)(implicit execut
   def getNews: Future[Seq[News]] = {
     newsRepository.getNews.map(_.sortBy(_.date).reverse.map { newsRow =>
       val date = formatDate(newsRow)
-      News(date, newsRow.title, newsRow.body.replaceAll("\r", "<br>"))
+      val cloudfrontDomain = configuration.get[String]("cloudfront.domain")
+      News(date, newsRow.title, newsRow.body.replaceAll("\r", "<br>"), newsRow.image.map(i => s"https://$cloudfrontDomain/$i"))
     })
   }
 
-  def addNews(title: String, body: String): Future[NewsRow] = {
-    val newsRow = NewsRow(UUID.randomUUID(), Date.valueOf(LocalDate.now()), title, body)
+  def addNews(title: String, body: String, image: Option[String]): Future[NewsRow] = {
+    val newsRow = NewsRow(UUID.randomUUID(), Date.valueOf(LocalDate.now()), title, body, image)
     newsRepository.addNews(newsRow)
   }
 
@@ -47,5 +50,5 @@ class NewsService @Inject() (val newsRepository: NewsRepository)(implicit execut
   }
 }
 object NewsService {
-  case class News(date: String, title: String, body: String)
+  case class News(date: String, title: String, body: String, image: Option[String])
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import auth.OidcSecurity
+import configuration.FileUploadConfiguration
 import controllers.NewsController.NewsForm
 import org.pac4j.core.util.Pac4jConstants
 import org.pac4j.play.PlayWebContext
@@ -14,7 +15,9 @@ import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.OptionConverters.RichOptional
 
-class NewsController @Inject() (val newsService: NewsService, val controllerComponents: SecurityComponents)(implicit ec: ExecutionContext) extends OidcSecurity {
+class NewsController @Inject() (val newsService: NewsService, val fileUploadConfiguration: FileUploadConfiguration, val controllerComponents: SecurityComponents)(implicit
+    ec: ExecutionContext
+) extends OidcSecurity {
 
   private def newsForm: Form[NewsForm] = Form[NewsForm](
     mapping(
@@ -43,8 +46,11 @@ class NewsController @Inject() (val newsService: NewsService, val controllerComp
       .bindFromRequest()
       .fold(
         errForm => Future.successful(BadRequest(views.html.newsAdd(errForm, pac4jToken))),
-        newsForm => {
-          newsService.addNews(newsForm.title, newsForm.body).map { _ =>
+        newsFormBody => {
+          val imageName = request.body.asMultipartFormData
+            .flatMap(_.file("image"))
+            .map(file => fileUploadConfiguration.uploadImage(file.ref.path.toFile.getName, file.ref.path))
+          newsService.addNews(newsFormBody.title, newsFormBody.body, imageName).map { _ =>
             Redirect(routes.NewsController.index())
           }
         }

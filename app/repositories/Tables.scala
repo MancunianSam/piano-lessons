@@ -1,11 +1,9 @@
 package repositories
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
-object Tables
-    extends {
-      val profile = slick.jdbc.PostgresProfile
-    }
-    with Tables
+object Tables extends Tables {
+  val profile = slick.jdbc.PostgresProfile
+}
 
 /** Slick data model trait for extension, choice of backend or usage in the cake pattern. (Make sure to initialize this late.) */
 trait Tables {
@@ -29,22 +27,24 @@ trait Tables {
     *   Database column title SqlType(varchar), Length(255,true)
     * @param body
     *   Database column body SqlType(text)
+    * @param image
+    *   Database column image SqlType(text), Default(None)
     */
-  case class NewsRow(id: java.util.UUID, date: java.sql.Date, title: String, body: String)
+  case class NewsRow(id: java.util.UUID, date: java.sql.Date, title: String, body: String, image: Option[String] = None)
 
   /** GetResult implicit for fetching NewsRow objects using plain SQL queries */
-  implicit def GetResultNewsRow(implicit e0: GR[java.util.UUID], e1: GR[java.sql.Date], e2: GR[String]): GR[NewsRow] = GR { prs =>
+  implicit def GetResultNewsRow(implicit e0: GR[java.util.UUID], e1: GR[java.sql.Date], e2: GR[String], e3: GR[Option[String]]): GR[NewsRow] = GR { prs =>
     import prs._
-    NewsRow.tupled((<<[java.util.UUID], <<[java.sql.Date], <<[String], <<[String]))
+    NewsRow.tupled((<<[java.util.UUID], <<[java.sql.Date], <<[String], <<[String], <<?[String]))
   }
 
   /** Table description of table news. Objects of this class serve as prototypes for rows in queries. */
   class News(_tableTag: Tag) extends profile.api.Table[NewsRow](_tableTag, "news") {
-    def * = (id, date, title, body) <> (NewsRow.tupled, NewsRow.unapply)
+    def * = (id, date, title, body, image).<>(NewsRow.tupled, NewsRow.unapply)
 
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(id), Rep.Some(date), Rep.Some(title), Rep.Some(body))).shaped.<>(
-      { r => import r._; _1.map(_ => NewsRow.tupled((_1.get, _2.get, _3.get, _4.get))) },
+    def ? = ((Rep.Some(id), Rep.Some(date), Rep.Some(title), Rep.Some(body), image)).shaped.<>(
+      { r => import r._; _1.map(_ => NewsRow.tupled((_1.get, _2.get, _3.get, _4.get, _5))) },
       (_: Any) => throw new Exception("Inserting into ? projection not supported.")
     )
 
@@ -59,6 +59,9 @@ trait Tables {
 
     /** Database column body SqlType(text) */
     val body: Rep[String] = column[String]("body")
+
+    /** Database column image SqlType(text), Default(None) */
+    val image: Rep[Option[String]] = column[Option[String]]("image", O.Default(None))
   }
 
   /** Collection-like TableQuery object for table News */
@@ -115,7 +118,7 @@ trait Tables {
 
   /** Table description of table student. Objects of this class serve as prototypes for rows in queries. */
   class Student(_tableTag: Tag) extends profile.api.Table[StudentRow](_tableTag, "student") {
-    def * = (id, email, name, student, level, phone, notes, paymentIntentId, totalCost, paymentConfirmed) <> (StudentRow.tupled, StudentRow.unapply)
+    def * = (id, email, name, student, level, phone, notes, paymentIntentId, totalCost, paymentConfirmed).<>(StudentRow.tupled, StudentRow.unapply)
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(id), Rep.Some(email), Rep.Some(name), student, level, Rep.Some(phone), notes, paymentIntentId, totalCost, paymentConfirmed)).shaped.<>(
@@ -188,7 +191,7 @@ trait Tables {
 
   /** Table description of table times. Objects of this class serve as prototypes for rows in queries. */
   class Times(_tableTag: Tag) extends profile.api.Table[TimesRow](_tableTag, "times") {
-    def * = (id, numberOfLessons, lengthOfLessons, startDate, endDate, studentId) <> (TimesRow.tupled, TimesRow.unapply)
+    def * = (id, numberOfLessons, lengthOfLessons, startDate, endDate, studentId).<>(TimesRow.tupled, TimesRow.unapply)
 
     /** Maps whole row to an option. Useful for outer joins. */
     def ? = ((Rep.Some(id), Rep.Some(numberOfLessons), Rep.Some(lengthOfLessons), Rep.Some(startDate), Rep.Some(endDate), studentId)).shaped.<>(

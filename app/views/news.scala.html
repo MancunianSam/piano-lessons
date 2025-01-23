@@ -8,6 +8,9 @@
       <h2>@item.date</h2>
       <h2>@item.title</h2>
       <p class="body-text">@Html(item.body)</p>
+      @if(item.image.isDefined) {
+        <img src="@item.image.get" alt="@item.title">
+      }
     </li>
   }
     </ul>

@@ -32,5 +32,6 @@ CREATE TABLE news
     date  date         not null default now(),
     title varchar(255) not null,
     body  text         not null,
+    image text         null default null,
     constraint news_pk primary key (id)
 );
